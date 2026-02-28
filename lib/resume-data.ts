@@ -6,7 +6,6 @@ import type { ResumeData } from "@/types/resume";
 export const defaultResumeData: ResumeData = {
   meta: {
     accentColor: "#1A56DB",
-    fontFamily: "Inter",
     baseFontSize: 8.5,
     nameSize: 22,
     titleSize: 10.5,

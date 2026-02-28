@@ -5,7 +5,6 @@ export type PageSize = "LETTER" | "A4";
 export interface ResumeData {
   meta: {
     accentColor: string; // e.g. "#1A56DB"
-    fontFamily: string; // e.g. "Inter"
     baseFontSize: number; // body text, points, range 8-12
     nameSize: number; // name font size, range 18-28
     titleSize: number; // role title size, range 9-13

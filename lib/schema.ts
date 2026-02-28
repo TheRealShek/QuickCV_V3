@@ -6,7 +6,6 @@ const pageSizeSchema = z.enum(["LETTER", "A4"]);
 
 const metaSchema = z.object({
   accentColor: z.string(), // hex color, e.g. "#1A56DB"
-  fontFamily: z.string(), // e.g. "Inter"
   baseFontSize: z.number().min(8).max(12), // points
   nameSize: z.number().min(18).max(28), // points
   titleSize: z.number().min(9).max(13), // points

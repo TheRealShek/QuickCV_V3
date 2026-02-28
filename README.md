@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# QuickCV_V3
+
+A programmatic, fully customisable resume builder. No drag-and-drop. No templates. Code controls every pixel.
+
+Built with Next.js 14 (App Router) + PDFKit + Tailwind CSS.
+
+## Features
+
+- **Live HTML preview** — instant feedback as you edit
+- **PDF generation** — PDFKit renders pixel-perfect output server-side
+- **Full style control** — accent color, font sizes, margins, page size (Letter / A4)
+- **All resume sections** — Header, Summary, Skills, Experience, Projects, Education, Certifications, Open Source
+- **Single deployment** — API route + frontend in one Next.js app
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy to Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Push this repo to GitHub
+2. Import the repo at [vercel.com/new](https://vercel.com/new)
+3. Framework preset: **Next.js** (auto-detected)
+4. No environment variables needed
+5. Deploy
 
-## Learn More
+The Inter font files in `public/fonts/` are bundled with the deployment. PDFKit is marked as an external package in `next.config.mjs` so it resolves correctly in serverless functions.
 
-To learn more about Next.js, take a look at the following resources:
+## Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 14 (App Router) |
+| PDF Engine | PDFKit |
+| Styling | Tailwind CSS |
+| Validation | Zod |
+| Fonts | Inter (300/400/700) |
+| Hosting | Vercel |

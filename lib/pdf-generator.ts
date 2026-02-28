@@ -433,11 +433,8 @@ function renderProjects(
       nameLine += ` — ${project.subtitle}`;
     }
 
-    // Build tech/link meta line
+    // Build tech meta line (link rendered separately in accent color)
     let techLine = project.tech;
-    if (project.link) {
-      techLine += ` · ${project.link}`;
-    }
     // Include dates if present
     if (project.startDate || project.endDate) {
       const dateStr = [project.startDate, project.endDate]
@@ -467,6 +464,14 @@ function renderProjects(
       fontSize: DESIGN.fonts.meta,
       lineGap: DESIGN.spacing.metaLineGap,
     });
+    const linkH = project.link
+      ? measureTextHeight(doc, project.link, {
+          width: w,
+          font: "Regular",
+          fontSize: DESIGN.fonts.meta,
+          lineGap: DESIGN.spacing.metaLineGap,
+        })
+      : 0;
     const firstBulletH = project.bullets[0]
       ? measureTextHeight(doc, "• " + project.bullets[0], {
           width: w - 12,
@@ -478,7 +483,7 @@ function renderProjects(
 
     addPageIfNeeded(
       doc,
-      nameH + statusH + techH + firstBulletH,
+      nameH + statusH + techH + linkH + firstBulletH,
       data.meta.pageSize,
       data.meta.pageMargin,
     );
@@ -514,7 +519,7 @@ function renderProjects(
       });
     }
 
-    // Tech line + link — regular, light-gray, 8.5pt
+    // Tech line — regular, light-gray, 8.5pt
     doc
       .font("Regular")
       .fontSize(DESIGN.fonts.meta)
@@ -523,6 +528,22 @@ function renderProjects(
       width: w,
       lineGap: DESIGN.spacing.metaLineGap,
     });
+
+    // Link — accent color, clickable (Architecture Section 2, SECTION 5)
+    if (project.link) {
+      doc
+        .font("Regular")
+        .fontSize(DESIGN.fonts.meta)
+        .fillColor(data.meta.accentColor);
+      doc.text(project.link, x, doc.y, {
+        width: w,
+        lineGap: DESIGN.spacing.metaLineGap,
+        link: project.link.startsWith("http")
+          ? project.link
+          : `https://${project.link}`,
+      });
+      doc.fillColor(DESIGN.colors.mid);
+    }
 
     doc.y += 2; // small gap before bullets
 

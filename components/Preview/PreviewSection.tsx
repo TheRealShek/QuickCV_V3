@@ -252,7 +252,6 @@ export function ProjectsSection({ data }: { data: ResumeData }) {
       <SectionHeader title="Projects" accentColor={data.meta.accentColor} />
       {data.projects.map((project, i) => {
         let techLine = project.tech;
-        if (project.link) techLine += ` · ${project.link}`;
         if (project.startDate || project.endDate) {
           const dateStr = [project.startDate, project.endDate]
             .filter(Boolean)
@@ -287,17 +286,30 @@ export function ProjectsSection({ data }: { data: ResumeData }) {
                 </span>
               )}
             </div>
-            {/* Tech + link line */}
+            {/* Tech line */}
             <div
               style={{
                 fontSize: `${DESIGN.fonts.meta}pt`,
                 color: DESIGN.colors.light,
                 lineHeight: 1.3,
-                marginBottom: "2pt",
+                marginBottom: project.link ? "1pt" : "2pt",
               }}
             >
               {techLine}
             </div>
+            {/* Link — accent color (Architecture Section 2, SECTION 5) */}
+            {project.link && (
+              <div
+                style={{
+                  fontSize: `${DESIGN.fonts.meta}pt`,
+                  color: data.meta.accentColor,
+                  lineHeight: 1.3,
+                  marginBottom: "2pt",
+                }}
+              >
+                {project.link}
+              </div>
+            )}
             {/* Bullets */}
             {project.bullets.map((bullet, j) => (
               <BulletPoint key={j} text={bullet} baseFontSize={data.meta.baseFontSize} />
