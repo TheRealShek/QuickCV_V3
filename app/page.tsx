@@ -5,14 +5,14 @@
 "use client";
 
 import BulletEditor from "@/components/Editor/BulletEditor";
+import CollapsibleItem from "@/components/Editor/CollapsibleItem";
 import SectionEditor from "@/components/Editor/SectionEditor";
 import StyleControls from "@/components/Editor/StyleControls";
 import ResumePreview from "@/components/Preview/ResumePreview";
-import Button from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { defaultResumeData } from "@/lib/resume-data";
 import type { ResumeData } from "@/types/resume";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 
 // ---------------------------------------------------------------------------
 // Reducer — manages entire ResumeData state
@@ -160,8 +160,25 @@ export default function Home() {
   const certs = data.certifications ?? [];
   const oss = data.openSource ?? [];
 
+  // Layout state for preview scaling
+  const previewColRef = useRef<HTMLDivElement>(null);
+  const [colWidth, setColWidth] = useState(0);
+
+  useEffect(() => {
+    if (!previewColRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      setColWidth(entries[0].contentRect.width);
+    });
+    observer.observe(previewColRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const PREVIEW_WIDTH = data.meta.pageSize === "A4" ? 595 : 612;
+  const availableWidth = Math.max(0, colWidth - 96);
+  const previewScale = colWidth > 0 ? availableWidth / PREVIEW_WIDTH : 1;
+
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="flex flex-col h-[100vh] overflow-hidden bg-gray-100">
       {/* Top bar */}
       <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shrink-0">
         <h1 className="text-sm font-bold text-gray-800">QuickCV_V3</h1>
@@ -190,9 +207,9 @@ export default function Home() {
       )}
 
       {/* Two-column layout */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1">
         {/* Left column — Editor */}
-        <div className="w-[420px] shrink-0 overflow-y-auto p-4 flex flex-col gap-3 border-r border-gray-200 bg-white">
+        <div className="h-[100vh] overflow-y-auto overflow-x-visible isolate flex-shrink-0 w-[40%] p-4 flex flex-col gap-3 border-r border-gray-200 bg-white">
           {/* ---- Style Controls (Module 6) ---- */}
           <SectionEditor title="Style" defaultOpen={false}>
             <StyleControls meta={data.meta} onChange={setMeta} />
@@ -324,14 +341,14 @@ export default function Home() {
                   >
                     ▼
                   </button>
-                  <Button
-                    variant="danger"
-                    size="sm"
+                  <button
+                    type="button"
                     onClick={() => setSkills(removeAt(data.skills, i))}
                     title="Remove"
+                    className="text-[16px] text-[#9CA3AF] hover:text-[#DC2626] bg-transparent border-none px-1 leading-none"
                   >
-                    ✕
-                  </Button>
+                    ×
+                  </button>
                 </div>
               </div>
             ))}
@@ -355,44 +372,15 @@ export default function Home() {
             addLabel="+ Add experience"
           >
             {exp.map((job, i) => (
-              <div
+              <CollapsibleItem
                 key={i}
-                className="border border-gray-100 rounded p-2 flex flex-col gap-2"
+                title={job.company || "Untitled Role"}
+                isFirst={i === 0}
+                isLast={i === exp.length - 1}
+                onMoveUp={() => setExperience(moveItem(exp, i, i - 1))}
+                onMoveDown={() => setExperience(moveItem(exp, i, i + 1))}
+                onRemove={() => setExperience(removeAt(exp, i))}
               >
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-gray-500">
-                    Experience {i + 1}
-                  </span>
-                  <div className="flex gap-1">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setExperience(moveItem(exp, i, i - 1))
-                      }
-                      disabled={i === 0}
-                      className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30 px-1"
-                    >
-                      ▲
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setExperience(moveItem(exp, i, i + 1))
-                      }
-                      disabled={i === exp.length - 1}
-                      className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30 px-1"
-                    >
-                      ▼
-                    </button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => setExperience(removeAt(exp, i))}
-                    >
-                      ✕
-                    </Button>
-                  </div>
-                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <Input
                     label="Job Title"
@@ -463,7 +451,7 @@ export default function Home() {
                     setExperience(updateAt(exp, i, { bullets }))
                   }
                 />
-              </div>
+              </CollapsibleItem>
             ))}
           </SectionEditor>
 
@@ -479,46 +467,15 @@ export default function Home() {
             addLabel="+ Add project"
           >
             {data.projects.map((proj, i) => (
-              <div
+              <CollapsibleItem
                 key={i}
-                className="border border-gray-100 rounded p-2 flex flex-col gap-2"
+                title={proj.name || "Untitled Project"}
+                isFirst={i === 0}
+                isLast={i === data.projects.length - 1}
+                onMoveUp={() => setProjects(moveItem(data.projects, i, i - 1))}
+                onMoveDown={() => setProjects(moveItem(data.projects, i, i + 1))}
+                onRemove={() => setProjects(removeAt(data.projects, i))}
               >
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-gray-500">
-                    Project {i + 1}
-                  </span>
-                  <div className="flex gap-1">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setProjects(moveItem(data.projects, i, i - 1))
-                      }
-                      disabled={i === 0}
-                      className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30 px-1"
-                    >
-                      ▲
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setProjects(moveItem(data.projects, i, i + 1))
-                      }
-                      disabled={i === data.projects.length - 1}
-                      className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30 px-1"
-                    >
-                      ▼
-                    </button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() =>
-                        setProjects(removeAt(data.projects, i))
-                      }
-                    >
-                      ✕
-                    </Button>
-                  </div>
-                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <Input
                     label="Project Name"
@@ -606,7 +563,7 @@ export default function Home() {
                     setProjects(updateAt(data.projects, i, { bullets }))
                   }
                 />
-              </div>
+              </CollapsibleItem>
             ))}
           </SectionEditor>
 
@@ -627,46 +584,15 @@ export default function Home() {
             addLabel="+ Add education"
           >
             {data.education.map((edu, i) => (
-              <div
+              <CollapsibleItem
                 key={i}
-                className="border border-gray-100 rounded p-2 flex flex-col gap-2"
+                title={edu.institution || "Untitled Education"}
+                isFirst={i === 0}
+                isLast={i === data.education.length - 1}
+                onMoveUp={() => setEducation(moveItem(data.education, i, i - 1))}
+                onMoveDown={() => setEducation(moveItem(data.education, i, i + 1))}
+                onRemove={() => setEducation(removeAt(data.education, i))}
               >
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-gray-500">
-                    Education {i + 1}
-                  </span>
-                  <div className="flex gap-1">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setEducation(moveItem(data.education, i, i - 1))
-                      }
-                      disabled={i === 0}
-                      className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30 px-1"
-                    >
-                      ▲
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setEducation(moveItem(data.education, i, i + 1))
-                      }
-                      disabled={i === data.education.length - 1}
-                      className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30 px-1"
-                    >
-                      ▼
-                    </button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() =>
-                        setEducation(removeAt(data.education, i))
-                      }
-                    >
-                      ✕
-                    </Button>
-                  </div>
-                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <Input
                     label="Degree"
@@ -762,7 +688,7 @@ export default function Home() {
                   label="Achievements"
                   placeholder="Scholarships, awards, honours"
                 />
-              </div>
+              </CollapsibleItem>
             ))}
           </SectionEditor>
 
@@ -779,46 +705,15 @@ export default function Home() {
             addLabel="+ Add certification"
           >
             {certs.map((cert, i) => (
-              <div
+              <CollapsibleItem
                 key={i}
-                className="border border-gray-100 rounded p-2 flex flex-col gap-2"
+                title={cert.name || "Untitled Certification"}
+                isFirst={i === 0}
+                isLast={i === certs.length - 1}
+                onMoveUp={() => setCertifications(moveItem(certs, i, i - 1))}
+                onMoveDown={() => setCertifications(moveItem(certs, i, i + 1))}
+                onRemove={() => setCertifications(removeAt(certs, i))}
               >
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-gray-500">
-                    Certification {i + 1}
-                  </span>
-                  <div className="flex gap-1">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setCertifications(moveItem(certs, i, i - 1))
-                      }
-                      disabled={i === 0}
-                      className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30 px-1"
-                    >
-                      ▲
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setCertifications(moveItem(certs, i, i + 1))
-                      }
-                      disabled={i === certs.length - 1}
-                      className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30 px-1"
-                    >
-                      ▼
-                    </button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() =>
-                        setCertifications(removeAt(certs, i))
-                      }
-                    >
-                      ✕
-                    </Button>
-                  </div>
-                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <Input
                     label="Certification Name"
@@ -863,7 +758,7 @@ export default function Home() {
                     hint="Optional verification link"
                   />
                 </div>
-              </div>
+              </CollapsibleItem>
             ))}
           </SectionEditor>
 
@@ -880,44 +775,15 @@ export default function Home() {
             addLabel="+ Add contribution"
           >
             {oss.map((contrib, i) => (
-              <div
+              <CollapsibleItem
                 key={i}
-                className="border border-gray-100 rounded p-2 flex flex-col gap-2"
+                title={contrib.project || "Untitled Contribution"}
+                isFirst={i === 0}
+                isLast={i === oss.length - 1}
+                onMoveUp={() => setOpenSource(moveItem(oss, i, i - 1))}
+                onMoveDown={() => setOpenSource(moveItem(oss, i, i + 1))}
+                onRemove={() => setOpenSource(removeAt(oss, i))}
               >
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-gray-500">
-                    Contribution {i + 1}
-                  </span>
-                  <div className="flex gap-1">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setOpenSource(moveItem(oss, i, i - 1))
-                      }
-                      disabled={i === 0}
-                      className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30 px-1"
-                    >
-                      ▲
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setOpenSource(moveItem(oss, i, i + 1))
-                      }
-                      disabled={i === oss.length - 1}
-                      className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30 px-1"
-                    >
-                      ▼
-                    </button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => setOpenSource(removeAt(oss, i))}
-                    >
-                      ✕
-                    </Button>
-                  </div>
-                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <Input
                     label="Project"
@@ -965,7 +831,7 @@ export default function Home() {
                   }
                   hint='Optional. e.g. "Merged. Affects 10k+ users."'
                 />
-              </div>
+              </CollapsibleItem>
             ))}
           </SectionEditor>
 
@@ -974,8 +840,21 @@ export default function Home() {
         </div>
 
         {/* Right column — Preview */}
-        <div className="flex-1 overflow-y-auto p-4 bg-gray-100">
-          <ResumePreview data={data} />
+        <div
+          ref={previewColRef}
+          className="h-[100vh] overflow-y-auto flex-shrink-0 w-[60%] bg-gray-100 flex justify-center items-start py-8"
+        >
+          <div
+            style={{
+              transform: `scale(${previewScale})`,
+              transformOrigin: "top center",
+              width: `${PREVIEW_WIDTH + 32}px`,
+              display: "flex",
+              justifyContent: "center"
+            }}
+          >
+            <ResumePreview data={data} />
+          </div>
         </div>
       </div>
     </div>

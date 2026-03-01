@@ -81,14 +81,14 @@ export default function BulletEditor({
               ▼
             </button>
           </div>
-          <Button
-            variant="danger"
-            size="sm"
+          <button
+            type="button"
             onClick={() => remove(i)}
             title="Remove bullet"
+            className="text-[16px] text-[#9CA3AF] hover:text-[#DC2626] bg-transparent border-none mt-1.5 px-1 leading-none"
           >
-            ✕
-          </Button>
+            ×
+          </button>
         </div>
       ))}
       <Button variant="ghost" size="sm" onClick={add} className="self-start">

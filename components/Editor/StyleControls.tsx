@@ -125,14 +125,14 @@ export default function StyleControls({ meta, onChange }: StyleControlsProps) {
       />
 
       {/* Page Size — LETTER or A4 */}
-      <div className="flex flex-col gap-0.5">
+      <div className="flex flex-col gap-0.5 relative z-10">
         <label className="text-xs font-medium text-gray-600">Page Size</label>
         <select
           value={meta.pageSize}
           onChange={(e) =>
             onChange({ pageSize: e.target.value as "LETTER" | "A4" })
           }
-          className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="relative z-50 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <option value="LETTER">Letter (8.5 × 11)</option>
           <option value="A4">A4 (210 × 297mm)</option>
