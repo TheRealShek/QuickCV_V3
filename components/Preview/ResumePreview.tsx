@@ -10,15 +10,15 @@ import { PAGE_DIMENSIONS } from "@/lib/layout";
 import type { ResumeData } from "@/types/resume";
 import { useEffect, useRef, useState } from "react";
 import {
-    AccentDivider,
-    CertificationsSection,
-    EducationSection,
-    ExperienceSection,
-    HeaderSection,
-    OpenSourceSection,
-    ProjectsSection,
-    SkillsSection,
-    SummarySection,
+  AccentDivider,
+  CertificationsSection,
+  EducationSection,
+  ExperienceSection,
+  HeaderSection,
+  OpenSourceSection,
+  ProjectsSection,
+  SkillsSection,
+  SummarySection,
 } from "./PreviewSection";
 
 interface ResumePreviewProps {
@@ -30,6 +30,7 @@ export default function ResumePreview({ data }: ResumePreviewProps) {
   const [scale, setScale] = useState(1);
 
   const PREVIEW_WIDTH = PAGE_DIMENSIONS[data.meta.pageSize].width;
+  const PAGE_HEIGHT_PX = data.meta.pageSize === "A4" ? 1188 : 1056;
 
   // Recalculate scale when container resizes
   useEffect(() => {
@@ -79,17 +80,74 @@ export default function ResumePreview({ data }: ResumePreviewProps) {
             fontFamily: "Inter, sans-serif",
             padding: `${data.meta.pageMargin}pt`,
             boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06)",
+            position: "relative",
           }}
         >
+          {/* Page Boundaries */}
+          {[1, 2, 3, 4, 5].map((page) => (
+            <div
+              key={page}
+              style={{
+                position: "absolute",
+                top: `${page * PAGE_HEIGHT_PX}px`,
+                left: 0,
+                right: 0,
+                margin: "4px 0",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                borderTop: "1px dashed #EF4444",
+                pointerEvents: "none",
+                zIndex: 50,
+              }}
+            >
+              <span
+                style={{
+                  color: "#EF4444",
+                  fontSize: "10px",
+                  backgroundColor: "#ffffff",
+                  padding: "0 8px",
+                  marginTop: "-1px", // Center on the dashed line
+                }}
+              >
+                ── Page Break ──
+              </span>
+            </div>
+          ))}
+
           <HeaderSection data={data} />
           <AccentDivider accentColor={data.meta.accentColor} />
-          <SummarySection data={data} />
-          <SkillsSection data={data} />
-          <ExperienceSection data={data} />
-          <ProjectsSection data={data} />
-          <EducationSection data={data} />
-          <CertificationsSection data={data} />
-          <OpenSourceSection data={data} />
+
+          {(data.meta.sectionOrder || [
+            "summary",
+            "skills",
+            "experience",
+            "projects",
+            "education",
+            "certifications",
+            "openSource",
+          ]).map((key) => {
+            if (data.meta.hiddenSections?.includes(key)) return null;
+
+            switch (key) {
+              case "summary":
+                return <SummarySection key={key} data={data} />;
+              case "skills":
+                return <SkillsSection key={key} data={data} />;
+              case "experience":
+                return <ExperienceSection key={key} data={data} />;
+              case "projects":
+                return <ProjectsSection key={key} data={data} />;
+              case "education":
+                return <EducationSection key={key} data={data} />;
+              case "certifications":
+                return <CertificationsSection key={key} data={data} />;
+              case "openSource":
+                return <OpenSourceSection key={key} data={data} />;
+              default:
+                return null;
+            }
+          })}
         </div>
       </div>
     </div>

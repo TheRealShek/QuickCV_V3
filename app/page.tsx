@@ -6,11 +6,13 @@
 
 import BulletEditor from "@/components/Editor/BulletEditor";
 import CollapsibleItem from "@/components/Editor/CollapsibleItem";
+import DataControls from "@/components/Editor/DataControls";
 import SectionEditor from "@/components/Editor/SectionEditor";
 import StyleControls from "@/components/Editor/StyleControls";
 import ResumePreview from "@/components/Preview/ResumePreview";
 import { Input, Textarea } from "@/components/ui/Input";
 import { defaultResumeData } from "@/lib/resume-data";
+import { resumeSchema } from "@/lib/schema";
 import type { ResumeData } from "@/types/resume";
 import { useEffect, useReducer, useRef, useState } from "react";
 
@@ -19,6 +21,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 // ---------------------------------------------------------------------------
 
 type Action =
+  | { type: "SET_FULL_STATE"; payload: ResumeData }
   | { type: "SET_META"; payload: Partial<ResumeData["meta"]> }
   | { type: "SET_HEADER"; payload: Partial<ResumeData["header"]> }
   | { type: "SET_CONTACT"; payload: Partial<ResumeData["header"]["contact"]> }
@@ -32,6 +35,8 @@ type Action =
 
 function resumeReducer(state: ResumeData, action: Action): ResumeData {
   switch (action.type) {
+    case "SET_FULL_STATE":
+      return action.payload;
     case "SET_META":
       return { ...state, meta: { ...state.meta, ...action.payload } };
     case "SET_HEADER":
@@ -89,6 +94,55 @@ function moveItem<T>(arr: T[], from: number, to: number): T[] {
 export default function Home() {
   const [data, dispatch] = useReducer(resumeReducer, defaultResumeData);
 
+  // Auto-save state
+  const [isMounted, setIsMounted] = useState(false);
+  const [lastSaved, setLastSaved] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // ON LOAD: check localStorage for saved resume
+  useEffect(() => {
+    setIsMounted(true);
+    const saved = localStorage.getItem("quickcv_resume_data");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const validation = resumeSchema.safeParse(parsed);
+        if (validation.success) {
+          dispatch({ type: "SET_FULL_STATE", payload: validation.data });
+        }
+      } catch (e) {
+        // Ignored
+      }
+    }
+  }, []);
+
+  // Use a ref so the interval callback always sees the latest data
+  // without re-triggering the interval setup on every keystroke
+  const dataRef = useRef(data);
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
+
+  // ON SAVE: every 10 seconds
+  useEffect(() => {
+    if (!isMounted) return;
+    const interval = setInterval(() => {
+      setIsSaving(true);
+      localStorage.setItem("quickcv_resume_data", JSON.stringify(dataRef.current));
+      setLastSaved(new Date().toLocaleTimeString());
+      setTimeout(() => setIsSaving(false), 200);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [isMounted]);
+
+  const handleClearCache = () => {
+    if (window.confirm("This will clear your saved resume. Are you sure?")) {
+      localStorage.removeItem("quickcv_resume_data");
+      setLastSaved(null);
+      dispatch({ type: "SET_FULL_STATE", payload: defaultResumeData });
+    }
+  };
+
   // Download state — exact pattern from Architecture Module 5
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -135,6 +189,8 @@ export default function Home() {
   }
 
   // Shorthand dispatchers
+  const setFullState = (payload: ResumeData) =>
+    dispatch({ type: "SET_FULL_STATE", payload });
   const setMeta = (p: Partial<ResumeData["meta"]>) =>
     dispatch({ type: "SET_META", payload: p });
   const setHeader = (p: Partial<ResumeData["header"]>) =>
@@ -182,7 +238,10 @@ export default function Home() {
       {/* Top bar */}
       <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shrink-0">
         <h1 className="text-sm font-bold text-gray-800">QuickCV_V3</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 relative z-50">
+          {/* Data Controls for Export & Import JSON payloads */}
+          <DataControls data={data} onImport={setFullState} />
+
           {/* Download PDF button — exact architecture pattern */}
           <button
             onClick={handleDownload}
@@ -210,6 +269,22 @@ export default function Home() {
       <div className="flex flex-1">
         {/* Left column — Editor */}
         <div className="h-[100vh] overflow-y-auto overflow-x-visible isolate flex-shrink-0 w-[40%] p-4 flex flex-col gap-3 border-r border-gray-200 bg-white">
+
+          {/* ---- Auto-save Status ---- */}
+          <div className="flex justify-between items-center text-[11px] text-[#9CA3AF]">
+            <span>
+              {isSaving ? "Saving..." : lastSaved ? `Last saved: ${lastSaved}` : ""}
+            </span>
+            {lastSaved && (
+              <button
+                onClick={handleClearCache}
+                className="hover:underline cursor-pointer hover:text-red-500"
+              >
+                Clear saved data
+              </button>
+            )}
+          </div>
+
           {/* ---- Style Controls (Module 6) ---- */}
           <SectionEditor title="Style" defaultOpen={false}>
             <StyleControls meta={data.meta} onChange={setMeta} />

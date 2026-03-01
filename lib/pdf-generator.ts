@@ -3,9 +3,9 @@
 // Architecture: Section 5 (structure), Section 10 (pagination), Section 11 (measurement rules)
 
 import {
-    PAGE_DIMENSIONS,
-    addPageIfNeeded,
-    measureTextHeight,
+  PAGE_DIMENSIONS,
+  addPageIfNeeded,
+  measureTextHeight,
 } from "@/lib/layout";
 import { DESIGN } from "@/lib/styles";
 import type { ResumeData } from "@/types/resume";
@@ -194,11 +194,11 @@ function renderSkills(
   // Estimate at least header + 2 rows for orphan prevention (Rule 1 from Section 10)
   const firstRowHeight = data.skills[0]
     ? measureTextHeight(doc, data.skills[0].value, {
-        width: valueColWidth,
-        font: "Regular",
-        fontSize: data.meta.baseFontSize,
-        lineGap: DESIGN.spacing.bodyLineGap,
-      })
+      width: valueColWidth,
+      font: "Regular",
+      fontSize: data.meta.baseFontSize,
+      lineGap: DESIGN.spacing.bodyLineGap,
+    })
     : 0;
   addPageIfNeeded(
     doc,
@@ -347,11 +347,11 @@ function renderExperience(
     });
     const firstBulletH = job.bullets[0]
       ? measureTextHeight(doc, "• " + job.bullets[0], {
-          width: w - 12,
-          font: "Regular",
-          fontSize: data.meta.baseFontSize,
-          lineGap: DESIGN.spacing.bulletLineGap,
-        })
+        width: w - 12,
+        font: "Regular",
+        fontSize: data.meta.baseFontSize,
+        lineGap: DESIGN.spacing.bulletLineGap,
+      })
       : 0;
 
     addPageIfNeeded(
@@ -452,11 +452,11 @@ function renderProjects(
     });
     const statusH = project.status
       ? measureTextHeight(doc, `(${project.status})`, {
-          width: w,
-          font: "Light",
-          fontSize: DESIGN.fonts.meta,
-          lineGap: DESIGN.spacing.metaLineGap,
-        })
+        width: w,
+        font: "Light",
+        fontSize: DESIGN.fonts.meta,
+        lineGap: DESIGN.spacing.metaLineGap,
+      })
       : 0;
     const techH = measureTextHeight(doc, techLine, {
       width: w,
@@ -466,19 +466,19 @@ function renderProjects(
     });
     const linkH = project.link
       ? measureTextHeight(doc, project.link, {
-          width: w,
-          font: "Regular",
-          fontSize: DESIGN.fonts.meta,
-          lineGap: DESIGN.spacing.metaLineGap,
-        })
+        width: w,
+        font: "Regular",
+        fontSize: DESIGN.fonts.meta,
+        lineGap: DESIGN.spacing.metaLineGap,
+      })
       : 0;
     const firstBulletH = project.bullets[0]
       ? measureTextHeight(doc, "• " + project.bullets[0], {
-          width: w - 12,
-          font: "Regular",
-          fontSize: data.meta.baseFontSize,
-          lineGap: DESIGN.spacing.bulletLineGap,
-        })
+        width: w - 12,
+        font: "Regular",
+        fontSize: data.meta.baseFontSize,
+        lineGap: DESIGN.spacing.bulletLineGap,
+      })
       : 0;
 
     addPageIfNeeded(
@@ -887,16 +887,39 @@ export async function generateResumePDF(
   // Register custom fonts
   registerFonts(doc);
 
-  // Render sections in order (V1 — hardcoded order per architecture)
+  // Render core unhideable components
   renderHeader(doc, data);
   renderDivider(doc, data);
-  renderSummary(doc, data);
-  renderSkills(doc, data);
-  renderExperience(doc, data);
-  renderProjects(doc, data);
-  renderEducation(doc, data);
-  renderCertifications(doc, data);
-  renderOpenSource(doc, data);
+
+  // Map keys to their respective render functions
+  const renderFunctions: Record<
+    string,
+    (doc: PDFKit.PDFDocument, data: ResumeData) => void
+  > = {
+    summary: renderSummary,
+    skills: renderSkills,
+    experience: renderExperience,
+    projects: renderProjects,
+    education: renderEducation,
+    certifications: renderCertifications,
+    openSource: renderOpenSource,
+  };
+
+  const order = data.meta.sectionOrder || [
+    "summary",
+    "skills",
+    "experience",
+    "projects",
+    "education",
+    "certifications",
+    "openSource",
+  ];
+
+  for (const key of order) {
+    if (data.meta.hiddenSections?.includes(key)) continue;
+    const renderFn = renderFunctions[key];
+    if (renderFn) renderFn(doc, data);
+  }
 
   doc.end();
 

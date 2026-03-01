@@ -12,6 +12,8 @@ export interface ResumeData {
     sectionSpacing: number; // gap before each section
     bulletSpacing: number; // gap between bullets
     pageSize: PageSize; // "LETTER" | "A4", default: "LETTER"
+    hiddenSections?: string[];
+    sectionOrder?: string[];
   };
 
   header: {

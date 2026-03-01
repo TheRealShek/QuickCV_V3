@@ -13,6 +13,8 @@ const metaSchema = z.object({
   sectionSpacing: z.number(), // gap before each section
   bulletSpacing: z.number(), // gap between bullets
   pageSize: pageSizeSchema, // "LETTER" | "A4"
+  hiddenSections: z.array(z.string()).optional(),
+  sectionOrder: z.array(z.string()).optional(),
 });
 
 const contactSchema = z.object({
