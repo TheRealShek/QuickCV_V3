@@ -72,7 +72,7 @@ export default function DataControls({ data, onImport }: DataControlsProps) {
 
             onImport(merged);
             showSuccess("Resume loaded.");
-        } catch (e) {
+        } catch {
             showError("Failed to parse JSON file.");
         }
     };

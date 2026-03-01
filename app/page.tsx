@@ -110,7 +110,7 @@ export default function Home() {
         if (validation.success) {
           dispatch({ type: "SET_FULL_STATE", payload: validation.data });
         }
-      } catch (e) {
+      } catch {
         // Ignored
       }
     }
