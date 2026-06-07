@@ -93,7 +93,7 @@ export default function DataControls({ data, onImport }: DataControlsProps) {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleImportClick}
-                    className="px-4 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 font-medium text-gray-700 transition-shadow shadow-sm"
+                    className="px-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium text-gray-700 dark:text-gray-200 transition-shadow shadow-sm"
                 >
                     Import JSON
                 </motion.button>
@@ -101,7 +101,7 @@ export default function DataControls({ data, onImport }: DataControlsProps) {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleExport}
-                    className="px-4 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 font-medium text-gray-700 transition-shadow shadow-sm"
+                    className="px-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium text-gray-700 dark:text-gray-200 transition-shadow shadow-sm"
                 >
                     Export JSON
                 </motion.button>
@@ -115,13 +115,13 @@ export default function DataControls({ data, onImport }: DataControlsProps) {
             </div>
 
             {error && (
-                <div className="text-xs text-red-600 mt-1 absolute top-full right-0 bg-white p-1 rounded shadow border border-red-100 z-50 whitespace-nowrap">
+                <div className="text-xs text-red-600 dark:text-red-400 mt-1 absolute top-full right-0 bg-white dark:bg-gray-800 p-1 rounded shadow border border-red-100 dark:border-red-900/50 z-50 whitespace-nowrap">
                     {error}
                 </div>
             )}
 
             {success && (
-                <div className="text-xs text-green-600 mt-1 absolute top-full right-0 bg-white p-1 rounded shadow border border-green-100 z-50 whitespace-nowrap">
+                <div className="text-xs text-green-600 dark:text-green-400 mt-1 absolute top-full right-0 bg-white dark:bg-gray-800 p-1 rounded shadow border border-green-100 dark:border-green-900/50 z-50 whitespace-nowrap">
                     {success}
                 </div>
             )}

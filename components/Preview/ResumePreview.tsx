@@ -73,6 +73,7 @@ export default function ResumePreview({ data }: ResumePreviewProps) {
       >
         {/* Resume page — white background, fixed width, page padding */}
         <div
+          className="transition-all duration-500 ease-in-out dark:invert dark:hue-rotate-180"
           style={{
             width: `${PREVIEW_WIDTH}px`,
             minHeight: `${PAGE_DIMENSIONS[data.meta.pageSize].height}px`,

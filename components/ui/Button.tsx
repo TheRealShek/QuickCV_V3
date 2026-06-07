@@ -20,7 +20,7 @@ export default function Button({
     variant === "danger"
       ? "bg-red-600 text-white hover:opacity-90"
       : variant === "ghost"
-        ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+        ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
         : "bg-blue-600 text-white hover:opacity-90";
 
   return (

@@ -19,20 +19,20 @@ export default function CollapsibleItem({
     const [open, setOpen] = useState(false);
 
     return (
-        <motion.div layout initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }} className="border border-gray-100 rounded flex flex-col bg-white">
+        <motion.div layout initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }} className="border border-gray-100 dark:border-gray-800 rounded flex flex-col bg-white dark:bg-[#1a1a1a] transition-colors">
             <div
-                className="flex justify-between items-center bg-white hover:bg-gray-50 rounded p-2 cursor-pointer"
+                className="flex justify-between items-center bg-white dark:bg-[#1a1a1a] hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded p-2 cursor-pointer transition-colors"
                 onClick={() => setOpen(!open)}
             >
                 <div className="flex items-center gap-1.5 flex-1">
-                    <span className="text-xs text-gray-400 w-3 text-center">{open ? "▾" : "▸"}</span>
-                    <span className="text-sm font-medium text-gray-700 select-none truncate">
+                    <span className="text-xs text-gray-400 dark:text-gray-500 w-3 text-center">{open ? "▾" : "▸"}</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200 select-none truncate">
                         {title}
                     </span>
                 </div>
                 <div className="flex gap-1 items-center shrink-0" onClick={(e) => e.stopPropagation()}>
                     {dragHandleProps && (
-                        <div {...dragHandleProps} className="cursor-grab hover:bg-gray-100 p-1 rounded text-gray-400 text-lg leading-none flex items-center justify-center mr-1" title="Drag to reorder">
+                        <div {...dragHandleProps} className="cursor-grab hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded text-gray-400 dark:text-gray-500 text-lg leading-none flex items-center justify-center mr-1 transition-colors" title="Drag to reorder">
                             ⋮⋮
                         </div>
                     )}
@@ -55,7 +55,7 @@ export default function CollapsibleItem({
                         transition={{ duration: 0.2, ease: "easeInOut" }}
                         className="overflow-hidden"
                     >
-                        <div className="p-2 pt-1 border-t border-gray-100 flex flex-col gap-2">{children}</div>
+                        <div className="p-2 pt-1 border-t border-gray-100 dark:border-gray-800 flex flex-col gap-2">{children}</div>
                     </motion.div>
                 )}
             </AnimatePresence>

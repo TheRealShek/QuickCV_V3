@@ -69,21 +69,21 @@ export default function StyleControls({ meta, onChange }: StyleControlsProps) {
     <div className="flex flex-col gap-6">
       {/* Sections Overview Panel */}
       <div className="flex flex-col gap-2">
-        <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+        <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
           Sections
         </label>
-        <div className="border border-gray-200 rounded divide-y divide-gray-100">
+        <div className="border border-gray-200 dark:border-gray-800 rounded divide-y divide-gray-100 dark:divide-gray-800">
           {currentOrder.map((key, index) => {
             const isVisible = !hiddenSections.includes(key);
             return (
-              <div
-                key={key}
-                draggable
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, index)}
-                className="flex items-center gap-2 p-2 bg-white hover:bg-gray-50 cursor-grab active:cursor-grabbing"
-              >
+                <div
+                  key={key}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, index)}
+                  className="flex items-center gap-2 p-2 bg-white dark:bg-[#1a1a1a] hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-grab active:cursor-grabbing transition-colors"
+                >
                 <div className="text-gray-400 text-sm cursor-grab active:cursor-grabbing w-4 text-center">
                   ⠿
                 </div>
@@ -93,7 +93,7 @@ export default function StyleControls({ meta, onChange }: StyleControlsProps) {
                   onChange={() => toggleVisibility(key)}
                   className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
                 />
-                <span className={`text-sm flex-1 ${!isVisible ? "text-gray-400" : "text-gray-700"}`}>
+                <span className={`text-sm flex-1 ${!isVisible ? "text-gray-400 dark:text-gray-600" : "text-gray-700 dark:text-gray-200"}`}>
                   {sectionLabels[key] || key}
                 </span>
               </div>
@@ -104,13 +104,13 @@ export default function StyleControls({ meta, onChange }: StyleControlsProps) {
 
       {/* Styling Controls */}
       <div className="flex flex-col gap-2">
-        <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+        <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
           Styling
         </label>
         <div className="grid grid-cols-2 gap-4">
           {/* Accent Color — color picker */}
           <div className="flex flex-col gap-0.5">
-            <label className="text-xs font-medium text-gray-600">
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
               Accent Color
             </label>
             <div className="flex gap-2 items-center">
@@ -118,7 +118,7 @@ export default function StyleControls({ meta, onChange }: StyleControlsProps) {
                 type="color"
                 value={meta.accentColor}
                 onChange={(e) => onChange({ accentColor: e.target.value })}
-                className="w-8 h-8 rounded border border-gray-300 cursor-pointer p-0"
+                className="w-8 h-8 rounded border border-gray-300 dark:border-gray-700 cursor-pointer p-0 bg-transparent"
               />
               <input
                 type="text"
@@ -127,7 +127,7 @@ export default function StyleControls({ meta, onChange }: StyleControlsProps) {
                   const v = e.target.value;
                   if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) onChange({ accentColor: v });
                 }}
-                className="flex-1 border border-gray-300 rounded px-2 py-1 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="flex-1 bg-white/50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-sm font-mono text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 maxLength={7}
               />
             </div>
@@ -135,9 +135,9 @@ export default function StyleControls({ meta, onChange }: StyleControlsProps) {
 
           {/* Base Font Size — range 7.5-11 */}
           <div className="flex flex-col gap-0.5">
-            <label className="text-xs font-medium text-gray-600 flex justify-between">
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex justify-between">
               <span>Base Font Size</span>
-              <span className="text-blue-600">{meta.baseFontSize} pt</span>
+              <span className="text-blue-600 dark:text-blue-400">{meta.baseFontSize} pt</span>
             </label>
             <input
               type="range"
@@ -155,9 +155,9 @@ export default function StyleControls({ meta, onChange }: StyleControlsProps) {
 
           {/* Name Size — range 16-26 */}
           <div className="flex flex-col gap-0.5">
-            <label className="text-xs font-medium text-gray-600 flex justify-between">
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex justify-between">
               <span>Name Size</span>
-              <span className="text-blue-600">{meta.nameSize} pt</span>
+              <span className="text-blue-600 dark:text-blue-400">{meta.nameSize} pt</span>
             </label>
             <input
               type="range"
@@ -175,9 +175,9 @@ export default function StyleControls({ meta, onChange }: StyleControlsProps) {
 
           {/* Title Size — range 9-13 */}
           <div className="flex flex-col gap-0.5">
-            <label className="text-xs font-medium text-gray-600 flex justify-between">
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex justify-between">
               <span>Title Size</span>
-              <span className="text-blue-600">{meta.titleSize} pt</span>
+              <span className="text-blue-600 dark:text-blue-400">{meta.titleSize} pt</span>
             </label>
             <input
               type="range"
@@ -195,9 +195,9 @@ export default function StyleControls({ meta, onChange }: StyleControlsProps) {
 
           {/* Page Margin — range 25-55 */}
           <div className="flex flex-col gap-0.5">
-            <label className="text-xs font-medium text-gray-600 flex justify-between">
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex justify-between">
               <span>Page Margin</span>
-              <span className="text-blue-600">{meta.pageMargin} pt</span>
+              <span className="text-blue-600 dark:text-blue-400">{meta.pageMargin} pt</span>
             </label>
             <input
               type="range"
@@ -215,9 +215,9 @@ export default function StyleControls({ meta, onChange }: StyleControlsProps) {
 
           {/* Section Spacing — range 4-16 */}
           <div className="flex flex-col gap-0.5">
-            <label className="text-xs font-medium text-gray-600 flex justify-between">
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex justify-between">
               <span>Section Spacing</span>
-              <span className="text-blue-600">{meta.sectionSpacing} pt</span>
+              <span className="text-blue-600 dark:text-blue-400">{meta.sectionSpacing} pt</span>
             </label>
             <input
               type="range"
@@ -235,9 +235,9 @@ export default function StyleControls({ meta, onChange }: StyleControlsProps) {
 
           {/* Bullet Spacing — range 0-4 */}
           <div className="flex flex-col gap-0.5">
-            <label className="text-xs font-medium text-gray-600 flex justify-between">
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex justify-between">
               <span>Bullet Spacing</span>
-              <span className="text-blue-600">{meta.bulletSpacing} pt</span>
+              <span className="text-blue-600 dark:text-blue-400">{meta.bulletSpacing} pt</span>
             </label>
             <input
               type="range"
@@ -255,13 +255,13 @@ export default function StyleControls({ meta, onChange }: StyleControlsProps) {
 
           {/* Page Size — LETTER or A4 */}
           <div className="flex flex-col gap-0.5 relative z-10">
-            <label className="text-xs font-medium text-gray-600">Page Size</label>
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Page Size</label>
             <select
               value={meta.pageSize}
               onChange={(e) =>
                 onChange({ pageSize: e.target.value as "LETTER" | "A4" })
               }
-              className="relative z-50 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="relative z-50 bg-white/50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="LETTER">Letter (8.5 × 11)</option>
               <option value="A4">A4 (210 × 297mm)</option>
