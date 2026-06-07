@@ -1,5 +1,7 @@
 {
   "framework": "nextjs",
+  "installCommand": "bun install",
+  "buildCommand": "bun run build",
   "functions": {
     "app/api/generate-pdf/route.ts": {
       "maxDuration": 10,
