@@ -24,7 +24,7 @@
 ## Rules
 
 <!-- Project-specific only. If it applies to every project everywhere, delete it. -->
-
+- Always use bun and not npm directly
 - Use Tailwind CSS for styling, preserving the core design aesthetics requested.
 
 ---

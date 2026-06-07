@@ -22,7 +22,7 @@ export default function SectionEditor({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className={`border ${open ? 'border-gray-200 shadow-sm' : 'border-gray-100'} rounded-xl bg-white overflow-hidden transition-all duration-200`}>
+    <div className={`shrink-0 border ${open ? 'border-gray-200 shadow-sm' : 'border-gray-100'} rounded-xl bg-white overflow-hidden transition-all duration-200`}>
       <button
         type="button"
         onClick={() => setOpen(!open)}

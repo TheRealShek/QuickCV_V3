@@ -269,10 +269,10 @@ export default function Home() {
       {/* Two-column layout */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left column — Editor */}
-        <div className="h-full overflow-y-auto overflow-x-visible isolate w-[45%] min-w-[320px] p-6 flex flex-col gap-4 border-r border-gray-200 bg-gray-50/30">
+        <div className="scrollbar-thin h-full overflow-y-auto overflow-x-visible isolate w-[45%] min-w-[320px] p-6 flex flex-col gap-4 border-r border-gray-200 bg-gray-50/30">
 
           {/* ---- Schema guide callout ---- */}
-          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${schemaBannerDismissed ? 'max-h-0 opacity-0 mb-0' : 'max-h-[200px] opacity-100'}`}>
+          <div className={`shrink-0 transition-all duration-300 ease-in-out overflow-hidden ${schemaBannerDismissed ? 'max-h-0 opacity-0 mb-0' : 'max-h-[200px] opacity-100'}`}>
             <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-blue-50 border border-blue-100 text-[13px] text-blue-800 leading-relaxed shadow-sm">
               <span className="shrink-0 mt-0.5">📋</span>
               <span className="flex-1 min-w-0 break-words">
@@ -313,7 +313,7 @@ export default function Home() {
             </div>
 
           {/* ---- Auto-save Status ---- */}
-          <div className="flex justify-between items-center text-[11px] text-[#9CA3AF]">
+          <div className="shrink-0 flex justify-between items-center text-[11px] text-[#9CA3AF]">
             <span>
               {isSaving ? "Saving..." : lastSaved ? `Last saved: ${lastSaved}` : ""}
             </span>
@@ -970,7 +970,7 @@ export default function Home() {
               justifyContent: "center"
             }}
           >
-            {(!data.header.name && !data.header.title && !data.summary && data.skills.length === 0 && data.experience.length === 0 && data.education.length === 0 && data.projects.length === 0 && data.certifications.length === 0 && data.openSource.length === 0) ? (
+            {(!data.header.name && !data.header.title && !data.summary && data.skills.length === 0 && exp.length === 0 && data.education.length === 0 && data.projects.length === 0 && certs.length === 0 && oss.length === 0) ? (
               <div className="flex flex-col items-center justify-center w-full min-h-[500px] text-gray-400">
                 <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
