@@ -80,6 +80,8 @@ export function HeaderSection({ data }: { data: ResumeData }) {
   if (header.contact.github) contactParts.push(header.contact.github);
   if (header.contact.portfolio) contactParts.push(header.contact.portfolio);
 
+  const cleanContactParts = contactParts.filter(Boolean);
+
   return (
     <div>
       {/* Name — largest element */}
@@ -113,7 +115,7 @@ export function HeaderSection({ data }: { data: ResumeData }) {
           lineHeight: 1.4,
         }}
       >
-        {contactParts.join(" · ")}
+        {cleanContactParts.length > 0 && cleanContactParts.join(" · ")}
       </div>
     </div>
   );
@@ -201,9 +203,13 @@ export function ExperienceSection({ data }: { data: ResumeData }) {
       <SectionHeader title="Experience" accentColor={data.meta.accentColor} />
       {data.experience.map((job, i) => {
         const metaParts: string[] = [job.company];
-        metaParts.push(`${job.startDate} – ${job.endDate}`);
+        if (job.startDate || job.endDate) {
+          metaParts.push([job.startDate, job.endDate].filter(Boolean).join(" – "));
+        }
         if (job.location) metaParts.push(job.location);
         if (job.employmentType) metaParts.push(job.employmentType);
+        
+        const cleanMetaParts = metaParts.filter(Boolean);
 
         return (
           <div key={i} style={{ marginBottom: i < data.experience!.length - 1 ? "8pt" : 0 }}>
@@ -332,8 +338,12 @@ export function EducationSection({ data }: { data: ResumeData }) {
       <SectionHeader title="Education" accentColor={data.meta.accentColor} />
       {data.education.map((edu, i) => {
         const metaParts: string[] = [edu.institution];
-        metaParts.push(`${edu.startYear} – ${edu.endYear}`);
+        if (edu.startYear || edu.endYear) {
+          metaParts.push([edu.startYear, edu.endYear].filter(Boolean).join(" – "));
+        }
         if (edu.location) metaParts.push(edu.location);
+
+        const cleanMetaParts = metaParts.filter(Boolean);
 
         return (
           <div key={i} style={{ marginBottom: i < data.education.length - 1 ? "8pt" : 0 }}>
@@ -357,7 +367,7 @@ export function EducationSection({ data }: { data: ResumeData }) {
                 lineHeight: 1.3,
               }}
             >
-              {metaParts.join(" · ")}
+              {cleanMetaParts.length > 0 && cleanMetaParts.join(" · ")}
             </div>
             {/* GPA */}
             {edu.gpa && (

@@ -68,7 +68,9 @@ function renderHeader(
   if (header.contact.github) contactParts.push(header.contact.github);
   if (header.contact.portfolio) contactParts.push(header.contact.portfolio);
 
-  const contactLine = contactParts.join(" · ");
+  const cleanContactParts = contactParts.filter(Boolean);
+  if (cleanContactParts.length === 0) return;
+  const contactLine = cleanContactParts.join(" · ");
 
   doc
     .font("Regular")
@@ -327,10 +329,12 @@ function renderExperience(
 
     // Build meta line: Company · StartDate – EndDate · Location · EmploymentType
     const metaParts: string[] = [job.company];
-    metaParts.push(`${job.startDate} – ${job.endDate}`);
+    if (job.startDate || job.endDate) {
+      metaParts.push([job.startDate, job.endDate].filter(Boolean).join(" – "));
+    }
     if (job.location) metaParts.push(job.location);
     if (job.employmentType) metaParts.push(job.employmentType);
-    const metaLine = metaParts.join(" · ");
+    const metaLine = metaParts.filter(Boolean).join(" · ");
 
     // Rule 2 from Section 10: Never split a job header from its first bullet
     const titleH = measureTextHeight(doc, job.title, {
@@ -593,9 +597,11 @@ function renderEducation(
 
     // Meta line: Institution · StartYear – EndYear · Location
     const metaParts: string[] = [edu.institution];
-    metaParts.push(`${edu.startYear} – ${edu.endYear}`);
+    if (edu.startYear || edu.endYear) {
+      metaParts.push([edu.startYear, edu.endYear].filter(Boolean).join(" – "));
+    }
     if (edu.location) metaParts.push(edu.location);
-    const metaLine = metaParts.join(" · ");
+    const metaLine = metaParts.filter(Boolean).join(" · ");
 
     // Measure header block for page break prevention
     const degreeH = measureTextHeight(doc, edu.degree, {
