@@ -71,16 +71,29 @@ export function BulletPoint({
 export function HeaderSection({ data }: { data: ResumeData }) {
   const { header, meta } = data;
 
-  const contactParts: string[] = [
-    header.contact.email,
-    header.contact.phone,
-    header.contact.city,
-  ];
-  if (header.contact.linkedin) contactParts.push(header.contact.linkedin);
-  if (header.contact.github) contactParts.push(header.contact.github);
-  if (header.contact.portfolio) contactParts.push(header.contact.portfolio);
+  const formatPhone = (phone?: string) => {
+    if (!phone) return "";
+    const m = phone.match(/^(\+91\s*)?(\d{5})\s*(\d{5})$/);
+    if (m) return `${m[1] || ""}${m[2]} ${m[3]}`.trim();
+    return phone;
+  };
 
-  const cleanContactParts = contactParts.filter(Boolean);
+  const cleanUrl = (url?: string) => {
+    if (!url) return "";
+    return url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
+  };
+
+  const row1Parts: string[] = [
+    header.contact.email,
+    formatPhone(header.contact.phone),
+    header.contact.city,
+  ].filter(Boolean);
+
+  const row2Parts: string[] = [
+    header.contact.linkedin,
+    header.contact.github,
+    header.contact.portfolio,
+  ].map(cleanUrl).filter(Boolean);
 
   return (
     <div>
@@ -107,16 +120,33 @@ export function HeaderSection({ data }: { data: ResumeData }) {
         {header.title}
       </div>
 
-      {/* Contact — single line, " · " separated */}
-      <div
-        style={{
-          fontSize: `${meta.baseFontSize}pt`,
-          color: "var(--cv-text-mid)",
-          lineHeight: 1.4,
-        }}
-      >
-        {cleanContactParts.length > 0 && cleanContactParts.join(" · ")}
-      </div>
+      {/* Contact Row 1 (Personal) */}
+      {row1Parts.length > 0 && (
+        <div
+          style={{
+            fontSize: `${meta.baseFontSize}pt`,
+            color: "var(--cv-text-mid)",
+            lineHeight: 1.4,
+            marginTop: "2pt",
+          }}
+        >
+          {row1Parts.join(" · ")}
+        </div>
+      )}
+
+      {/* Contact Row 2 (Links) */}
+      {row2Parts.length > 0 && (
+        <div
+          style={{
+            fontSize: `${meta.baseFontSize}pt`,
+            color: "var(--cv-text-mid)",
+            lineHeight: 1.4,
+            marginTop: "1pt",
+          }}
+        >
+          {row2Parts.join(" · ")}
+        </div>
+      )}
     </div>
   );
 }

@@ -58,28 +58,83 @@ function renderHeader(
   doc.font("Regular").fontSize(meta.titleSize).fillColor(meta.accentColor);
   doc.text(header.title, x, doc.y, { width: w });
 
-  // Contact — single line, " · " separated, mid-gray
-  const contactParts: string[] = [
+  const formatPhone = (phone?: string) => {
+    if (!phone) return "";
+    const m = phone.match(/^(\+91\s*)?(\d{5})\s*(\d{5})$/);
+    if (m) return `${m[1] || ""}${m[2]} ${m[3]}`.trim();
+    return phone;
+  };
+
+  const cleanUrl = (url?: string) => {
+    if (!url) return "";
+    return url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
+  };
+
+  // Row 1: Personal (Email, Phone, City)
+  const row1Parts: string[] = [
     header.contact.email,
-    header.contact.phone,
+    formatPhone(header.contact.phone),
     header.contact.city,
-  ];
-  if (header.contact.linkedin) contactParts.push(header.contact.linkedin);
-  if (header.contact.github) contactParts.push(header.contact.github);
-  if (header.contact.portfolio) contactParts.push(header.contact.portfolio);
+  ].filter(Boolean);
 
-  const cleanContactParts = contactParts.filter(Boolean);
-  if (cleanContactParts.length === 0) return;
-  const contactLine = cleanContactParts.join(" · ");
+  if (row1Parts.length > 0) {
+    doc.moveDown(0.2);
+    doc
+      .font("Regular")
+      .fontSize(meta.baseFontSize)
+      .fillColor(DESIGN.colors.mid);
+    doc.text(row1Parts.join(" · "), x, doc.y, {
+      width: w,
+      lineGap: DESIGN.spacing.metaLineGap,
+    });
+  }
 
-  doc
-    .font("Regular")
-    .fontSize(meta.baseFontSize)
-    .fillColor(DESIGN.colors.mid);
-  doc.text(contactLine, x, doc.y, {
-    width: w,
-    lineGap: DESIGN.spacing.metaLineGap,
-  });
+  // Row 2: Links (LinkedIn, GitHub, Portfolio)
+  const row2Links = [
+    { url: header.contact.linkedin, label: cleanUrl(header.contact.linkedin) },
+    { url: header.contact.github, label: cleanUrl(header.contact.github) },
+    { url: header.contact.portfolio, label: cleanUrl(header.contact.portfolio) },
+  ].filter(l => l.url);
+
+  if (row2Links.length > 0) {
+    // Add a tiny gap between the rows if Row 1 exists
+    if (row1Parts.length > 0) {
+      doc.moveDown(0.1);
+    }
+    
+    doc
+      .font("Regular")
+      .fontSize(meta.baseFontSize)
+      .fillColor(DESIGN.colors.mid);
+
+    for (let i = 0; i < row2Links.length; i++) {
+      const isLast = i === row2Links.length - 1;
+      const link = row2Links[i];
+      const urlToLink = link.url.startsWith("http") ? link.url : `https://${link.url}`;
+      
+      // Print the link label
+      const linkOptions: PDFKit.Mixins.TextOptions = {
+        continued: !isLast,
+        link: urlToLink,
+        lineGap: DESIGN.spacing.metaLineGap,
+      };
+      
+      if (i === 0) {
+        doc.text(link.label, x, doc.y, linkOptions);
+      } else {
+        doc.text(link.label, linkOptions);
+      }
+      
+      // Print the separator
+      if (!isLast) {
+        doc.text(" · ", {
+          continued: true,
+          link: null as unknown as string,
+          lineGap: DESIGN.spacing.metaLineGap,
+        });
+      }
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
