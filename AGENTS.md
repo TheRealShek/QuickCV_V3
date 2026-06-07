@@ -7,7 +7,7 @@
 
 ## Commands
 
-<!-- Add only non-standard or non-obvious commands. Standard ones (npm install, go test) → skip. -->
+<!-- Add only non-standard or non-obvious commands. Standard ones (bun install, go test) → skip. -->
 *(No non-standard commands required)*
 
 ---

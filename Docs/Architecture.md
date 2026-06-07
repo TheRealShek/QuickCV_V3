@@ -593,7 +593,7 @@ and place them in public/fonts/.
 Do not create any UI yet.
 ```
 
-**Done when:** `npm run dev` starts with no errors. Schema validates sample data.
+**Done when:** `bun dev` starts with no errors. Schema validates sample data.
 
 ---
 
@@ -1197,11 +1197,11 @@ PDFKit embeds the entire font file into the PDF. Inter-Regular.ttf is ~300KB. If
 
 ```bash
 # One-time setup
-npm install
+bun install
 # Place Inter .ttf files in public/fonts/
 
 # Local dev
-npm run dev
+bun dev
 
 # Deploy
 git push origin main

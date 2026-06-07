@@ -87,16 +87,16 @@ export default function DataControls({ data, onImport }: DataControlsProps) {
 
     return (
         <div className="flex flex-col items-end">
-            <div className="flex gap-2">
+            <div className="flex gap-3">
                 <button
                     onClick={handleImportClick}
-                    className="px-3 py-1.5 text-sm rounded border border-gray-300 bg-white hover:bg-gray-50 font-medium text-gray-700 transition-colors"
+                    className="px-4 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 font-medium text-gray-700 transition-all shadow-sm"
                 >
                     Import JSON
                 </button>
                 <button
                     onClick={handleExport}
-                    className="px-3 py-1.5 text-sm rounded border border-gray-300 bg-white hover:bg-gray-50 font-medium text-gray-700 transition-colors"
+                    className="px-4 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 font-medium text-gray-700 transition-all shadow-sm"
                 >
                     Export JSON
                 </button>

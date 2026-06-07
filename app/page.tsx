@@ -237,8 +237,8 @@ export default function Home() {
   return (
     <div className="flex flex-col h-[100vh] overflow-hidden bg-gray-100">
       {/* Top bar */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shrink-0">
-        <h1 className="text-sm font-bold text-gray-800">QuickCV_V3</h1>
+      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shrink-0 shadow-sm z-50">
+        <h1 className="text-lg font-bold text-gray-900 tracking-tight">QuickCV</h1>
         <div className="flex items-center gap-3 relative z-50">
           {/* Data Controls for Export & Import JSON payloads */}
           <DataControls data={data} onImport={setFullState} />
@@ -247,8 +247,8 @@ export default function Home() {
           <button
             onClick={handleDownload}
             disabled={isGenerating}
-            className={`px-4 py-2 rounded text-white font-medium transition-opacity
-              ${isGenerating ? "opacity-50 cursor-not-allowed" : "hover:opacity-90"}`}
+            className={`px-4 py-2 rounded-lg text-white font-medium shadow-sm transition-all
+              ${isGenerating ? "opacity-50 cursor-not-allowed" : "hover:opacity-90 hover:shadow"}`}
             style={{ backgroundColor: data.meta.accentColor }}
           >
             {isGenerating ? "Generating..." : "Download PDF"}
@@ -267,15 +267,15 @@ export default function Home() {
       )}
 
       {/* Two-column layout */}
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         {/* Left column — Editor */}
-        <div className="h-[100vh] overflow-y-auto overflow-x-visible isolate flex-shrink-0 w-[40%] p-4 flex flex-col gap-3 border-r border-gray-200 bg-white">
+        <div className="h-full overflow-y-auto overflow-x-visible isolate w-[45%] min-w-[320px] p-6 flex flex-col gap-4 border-r border-gray-200 bg-gray-50/30">
 
           {/* ---- Schema guide callout ---- */}
-          {!schemaBannerDismissed && (
-            <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-blue-50 border border-blue-100 text-[12px] text-blue-700 leading-relaxed">
+          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${schemaBannerDismissed ? 'max-h-0 opacity-0 mb-0' : 'max-h-[200px] opacity-100'}`}>
+            <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-blue-50 border border-blue-100 text-[13px] text-blue-800 leading-relaxed shadow-sm">
               <span className="shrink-0 mt-0.5">📋</span>
-              <span>
+              <span className="flex-1 min-w-0 break-words">
                 New here? Read the{" "}
                 <a
                   href="/schema"
@@ -300,15 +300,17 @@ export default function Home() {
                 </a>
                 .
               </span>
-              <button
-                onClick={() => setSchemaBannerDismissed(true)}
-                className="shrink-0 ml-auto text-blue-400 hover:text-blue-700 transition-colors"
-                aria-label="Dismiss"
-              >
-                ✕
-              </button>
+                <button
+                  onClick={() => setSchemaBannerDismissed(true)}
+                  className="shrink-0 ml-auto text-blue-400 hover:text-blue-700 transition-colors p-1"
+                  aria-label="Dismiss"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
             </div>
-          )}
 
           {/* ---- Auto-save Status ---- */}
           <div className="flex justify-between items-center text-[11px] text-[#9CA3AF]">
@@ -957,7 +959,7 @@ export default function Home() {
         {/* Right column — Preview */}
         <div
           ref={previewColRef}
-          className="h-[100vh] overflow-y-auto flex-shrink-0 w-[60%] bg-gray-100 flex justify-center items-start py-8"
+          className="h-full overflow-y-auto flex-1 bg-gray-100/50 flex justify-center items-start py-8"
         >
           <div
             style={{
@@ -968,7 +970,17 @@ export default function Home() {
               justifyContent: "center"
             }}
           >
-            <ResumePreview data={data} />
+            {(!data.header.name && !data.header.title && !data.summary && data.skills.length === 0 && data.experience.length === 0 && data.education.length === 0 && data.projects.length === 0 && data.certifications.length === 0 && data.openSource.length === 0) ? (
+              <div className="flex flex-col items-center justify-center w-full min-h-[500px] text-gray-400">
+                <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p className="text-sm font-medium text-gray-500">Your resume is empty</p>
+                <p className="text-xs mt-1 text-gray-400">Fill out the form on the left or import JSON to get started.</p>
+              </div>
+            ) : (
+              <ResumePreview data={data} />
+            )}
           </div>
         </div>
       </div>
