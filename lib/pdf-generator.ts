@@ -91,10 +91,12 @@ function renderHeader(
 
   // Row 2: Links (LinkedIn, GitHub, Portfolio)
   const row2Links = [
-    { url: header.contact.linkedin, label: cleanUrl(header.contact.linkedin) },
-    { url: header.contact.github, label: cleanUrl(header.contact.github) },
-    { url: header.contact.portfolio, label: cleanUrl(header.contact.portfolio) },
-  ].filter(l => l.url);
+    header.contact.linkedin,
+    header.contact.github,
+    header.contact.portfolio,
+  ]
+    .filter((url): url is string => Boolean(url))
+    .map(url => ({ url, label: cleanUrl(url) }));
 
   if (row2Links.length > 0) {
     // Add a tiny gap between the rows if Row 1 exists
