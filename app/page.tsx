@@ -84,13 +84,7 @@ function removeAt<T>(arr: T[], index: number): T[] {
   return arr.filter((_, i) => i !== index);
 }
 
-function moveItem<T>(arr: T[], from: number, to: number): T[] {
-  if (to < 0 || to >= arr.length) return arr;
-  const next = [...arr];
-  const [item] = next.splice(from, 1);
-  next.splice(to, 0, item);
-  return next;
-}
+
 
 // ---------------------------------------------------------------------------
 // Main Page Component

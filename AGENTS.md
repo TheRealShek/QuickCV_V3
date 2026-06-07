@@ -28,6 +28,7 @@
 - Always use bun and not npm directly
 - Use Tailwind CSS for styling, preserving the core design aesthetics requested.
 - Whenever the resume schema (`types/resume.ts` or `lib/schema.ts`) is modified, you MUST also update `fieldReference` in `lib/schema-doc.ts` to keep the AI prompt and /schema reference page in sync.
+- After every code change, ALWAYS run `npx next lint` to ensure no linting errors break the Vercel build.
 
 ---
 

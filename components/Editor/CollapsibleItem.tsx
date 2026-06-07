@@ -7,7 +7,7 @@ interface CollapsibleItemProps {
     title: string;
     children: React.ReactNode;
     onRemove: () => void;
-    dragHandleProps?: any;
+    dragHandleProps?: Record<string, unknown>;
 }
 
 export default function CollapsibleItem({

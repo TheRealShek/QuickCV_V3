@@ -6,7 +6,7 @@ import { ReactNode } from "react";
 
 interface SortableItemProps {
   id: string;
-  children: (dragHandleProps: any) => ReactNode;
+  children: (dragHandleProps: Record<string, unknown>) => ReactNode;
 }
 
 export function SortableItem({ id, children }: SortableItemProps) {
