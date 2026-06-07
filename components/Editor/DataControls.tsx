@@ -4,6 +4,7 @@ import { defaultResumeData } from "@/lib/resume-data";
 import { resumeSchema } from "@/lib/schema";
 import type { ResumeData } from "@/types/resume";
 import { useRef, useState } from "react";
+import { motion } from "framer-motion";
 
 interface DataControlsProps {
     data: ResumeData;
@@ -88,18 +89,22 @@ export default function DataControls({ data, onImport }: DataControlsProps) {
     return (
         <div className="flex flex-col items-end">
             <div className="flex gap-3">
-                <button
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={handleImportClick}
-                    className="px-4 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 font-medium text-gray-700 transition-all shadow-sm"
+                    className="px-4 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 font-medium text-gray-700 transition-shadow shadow-sm"
                 >
                     Import JSON
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={handleExport}
-                    className="px-4 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 font-medium text-gray-700 transition-all shadow-sm"
+                    className="px-4 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 font-medium text-gray-700 transition-shadow shadow-sm"
                 >
                     Export JSON
-                </button>
+                </motion.button>
                 <input
                     type="file"
                     accept=".json"

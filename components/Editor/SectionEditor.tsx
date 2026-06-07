@@ -3,6 +3,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface SectionEditorProps {
   title: string;
@@ -33,20 +34,30 @@ export default function SectionEditor({
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </div>
       </button>
-      {open && (
-        <div className="p-5 flex flex-col gap-4">
-          {children}
-          {onAdd && (
-            <button
-              type="button"
-              onClick={onAdd}
-              className="self-start text-sm text-blue-600 hover:text-blue-800 font-medium tracking-tight mt-1"
-            >
-              {addLabel}
-            </button>
-          )}
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="p-5 flex flex-col gap-4">
+              {children}
+              {onAdd && (
+                <button
+                  type="button"
+                  onClick={onAdd}
+                  className="self-start text-sm text-blue-600 hover:text-blue-800 font-medium tracking-tight mt-1"
+                >
+                  {addLabel}
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

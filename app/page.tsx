@@ -15,6 +15,10 @@ import { defaultResumeData } from "@/lib/resume-data";
 import { resumeSchema } from "@/lib/schema";
 import type { ResumeData } from "@/types/resume";
 import { useEffect, useReducer, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableItem } from '@/components/Editor/SortableItem';
 
 // ---------------------------------------------------------------------------
 // Reducer — manages entire ResumeData state
@@ -220,6 +224,7 @@ export default function Home() {
   // Layout state for preview scaling
   const previewColRef = useRef<HTMLDivElement>(null);
   const [colWidth, setColWidth] = useState(0);
+  const [zoomLevel, setZoomLevel] = useState<number | "fit">("fit");
 
   useEffect(() => {
     if (!previewColRef.current) return;
@@ -232,27 +237,59 @@ export default function Home() {
 
   const PREVIEW_WIDTH = data.meta.pageSize === "A4" ? 595 : 612;
   const availableWidth = Math.max(0, colWidth - 96);
-  const previewScale = colWidth > 0 ? availableWidth / PREVIEW_WIDTH : 1;
+  const fitScale = colWidth > 0 ? availableWidth / PREVIEW_WIDTH : 1;
+  const computedScale = zoomLevel === "fit" ? fitScale : zoomLevel;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const activeParts = (active.id as string).split("-");
+      const overParts = (over.id as string).split("-");
+      if (activeParts[0] !== overParts[0]) return;
+
+      const section = activeParts[0];
+      const oldIndex = parseInt(activeParts[1]);
+      const newIndex = parseInt(overParts[1]);
+
+      switch(section) {
+        case 'skills': setSkills(arrayMove(data.skills, oldIndex, newIndex)); break;
+        case 'experience': setExperience(arrayMove(exp, oldIndex, newIndex)); break;
+        case 'projects': setProjects(arrayMove(data.projects, oldIndex, newIndex)); break;
+        case 'education': setEducation(arrayMove(data.education, oldIndex, newIndex)); break;
+        case 'certifications': setCertifications(arrayMove(certs, oldIndex, newIndex)); break;
+        case 'openSource': setOpenSource(arrayMove(oss, oldIndex, newIndex)); break;
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col h-[100vh] overflow-hidden bg-gray-100">
       {/* Top bar */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shrink-0 shadow-sm z-50">
+      <header className="bg-white/70 backdrop-blur-md border-b border-white/20 px-6 py-4 flex items-center justify-between shrink-0 shadow-[0_4px_30px_rgba(0,0,0,0.05)] z-50">
         <h1 className="text-lg font-bold text-gray-900 tracking-tight">QuickCV</h1>
         <div className="flex items-center gap-3 relative z-50">
           {/* Data Controls for Export & Import JSON payloads */}
           <DataControls data={data} onImport={setFullState} />
 
           {/* Download PDF button — exact architecture pattern */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={handleDownload}
             disabled={isGenerating}
-            className={`px-4 py-2 rounded-lg text-white font-medium shadow-sm transition-all
+            className={`px-4 py-2 rounded-lg text-white font-medium shadow-sm transition-shadow
               ${isGenerating ? "opacity-50 cursor-not-allowed" : "hover:opacity-90 hover:shadow"}`}
             style={{ backgroundColor: data.meta.accentColor }}
           >
             {isGenerating ? "Generating..." : "Download PDF"}
-          </button>
+          </motion.button>
         </div>
       </header>
 
@@ -267,9 +304,10 @@ export default function Home() {
       )}
 
       {/* Two-column layout */}
-      <div className="flex flex-1 overflow-hidden">
+      <main className="flex-1 flex overflow-hidden">
         {/* Left column — Editor */}
-        <div className="scrollbar-thin h-full overflow-y-auto overflow-x-visible isolate w-[45%] min-w-[320px] p-6 flex flex-col gap-4 border-r border-gray-200 bg-gray-50/30">
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <div className="scrollbar-thin h-full overflow-y-auto overflow-x-visible isolate w-[45%] min-w-[320px] p-6 flex flex-col gap-4 border-r border-gray-200 bg-white shadow-[10px_0_30px_rgba(0,0,0,0.05)] z-20 relative">
 
           {/* ---- Schema guide callout ---- */}
           <div className={`shrink-0 transition-all duration-300 ease-in-out overflow-hidden ${schemaBannerDismissed ? 'max-h-0 opacity-0 mb-0' : 'max-h-[200px] opacity-100'}`}>
@@ -415,60 +453,51 @@ export default function Home() {
             }
             addLabel="+ Add skill group"
           >
-            {data.skills.map((skill, i) => (
-              <div key={i} className="flex gap-2 items-start">
-                <div className="flex-1 grid grid-cols-[100px_1fr] gap-2">
-                  <Input
-                    label={i === 0 ? "Label" : undefined}
-                    value={skill.label}
-                    onChange={(e) =>
-                      setSkills(
-                        updateAt(data.skills, i, { label: e.target.value })
-                      )
-                    }
-                    placeholder="Backend"
-                  />
-                  <Input
-                    label={i === 0 ? "Value" : undefined}
-                    value={skill.value}
-                    onChange={(e) =>
-                      setSkills(
-                        updateAt(data.skills, i, { value: e.target.value })
-                      )
-                    }
-                    placeholder="Go, gRPC, REST APIs"
-                  />
-                </div>
-                <div className="flex gap-0.5 mt-1">
-                  <button
-                    type="button"
-                    onClick={() => setSkills(moveItem(data.skills, i, i - 1))}
-                    disabled={i === 0}
-                    className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30 px-1"
-                    title="Move up"
-                  >
-                    ▲
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSkills(moveItem(data.skills, i, i + 1))}
-                    disabled={i === data.skills.length - 1}
-                    className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30 px-1"
-                    title="Move down"
-                  >
-                    ▼
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSkills(removeAt(data.skills, i))}
-                    title="Remove"
-                    className="text-[16px] text-[#9CA3AF] hover:text-[#DC2626] bg-transparent border-none px-1 leading-none"
-                  >
-                    ×
-                  </button>
-                </div>
-              </div>
-            ))}
+            <SortableContext items={data.skills.map((_, i) => `skills-${i}`)} strategy={verticalListSortingStrategy}>
+              {data.skills.map((skill, i) => (
+                <SortableItem key={`skills-${i}`} id={`skills-${i}`}>
+                  {(dragHandleProps) => (
+                    <div className="flex gap-2 items-start bg-white z-10">
+                      <div {...dragHandleProps} className="mt-1.5 cursor-grab hover:bg-gray-100 p-1 rounded text-gray-400 text-lg leading-none mr-1" title="Drag to reorder">
+                        ⋮⋮
+                      </div>
+                      <div className="flex-1 grid grid-cols-[100px_1fr] gap-2">
+                        <Input
+                          label={i === 0 ? "Label" : undefined}
+                          value={skill.label}
+                          onChange={(e) =>
+                            setSkills(
+                              updateAt(data.skills, i, { label: e.target.value })
+                            )
+                          }
+                          placeholder="Backend"
+                        />
+                        <Input
+                          label={i === 0 ? "Value" : undefined}
+                          value={skill.value}
+                          onChange={(e) =>
+                            setSkills(
+                              updateAt(data.skills, i, { value: e.target.value })
+                            )
+                          }
+                          placeholder="Go, gRPC, REST APIs"
+                        />
+                      </div>
+                      <div className="flex gap-0.5 mt-1 items-center h-full pt-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setSkills(removeAt(data.skills, i))}
+                          title="Remove"
+                          className="text-[16px] text-[#9CA3AF] hover:text-[#DC2626] bg-transparent border-none px-1 leading-none"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </SortableItem>
+              ))}
+            </SortableContext>
           </SectionEditor>
 
           {/* ---- Experience ---- */}
@@ -488,88 +517,90 @@ export default function Home() {
             }
             addLabel="+ Add experience"
           >
-            {exp.map((job, i) => (
-              <CollapsibleItem
-                key={i}
-                title={job.company || "Untitled Role"}
-                isFirst={i === 0}
-                isLast={i === exp.length - 1}
-                onMoveUp={() => setExperience(moveItem(exp, i, i - 1))}
-                onMoveDown={() => setExperience(moveItem(exp, i, i + 1))}
-                onRemove={() => setExperience(removeAt(exp, i))}
-              >
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    label="Job Title"
-                    value={job.title}
-                    onChange={(e) =>
-                      setExperience(
-                        updateAt(exp, i, { title: e.target.value })
-                      )
-                    }
-                  />
-                  <Input
-                    label="Company"
-                    value={job.company}
-                    onChange={(e) =>
-                      setExperience(
-                        updateAt(exp, i, { company: e.target.value })
-                      )
-                    }
-                  />
-                  <Input
-                    label="Location"
-                    value={job.location ?? ""}
-                    onChange={(e) =>
-                      setExperience(
-                        updateAt(exp, i, {
-                          location: e.target.value || undefined,
-                        })
-                      )
-                    }
-                    hint="Optional"
-                  />
-                  <Input
-                    label="Employment Type"
-                    value={job.employmentType ?? ""}
-                    onChange={(e) =>
-                      setExperience(
-                        updateAt(exp, i, {
-                          employmentType: e.target.value || undefined,
-                        })
-                      )
-                    }
-                    hint="Full-time / Internship / Contract"
-                  />
-                  <Input
-                    label="Start Date"
-                    value={job.startDate}
-                    onChange={(e) =>
-                      setExperience(
-                        updateAt(exp, i, { startDate: e.target.value })
-                      )
-                    }
-                    hint="e.g. Jun 2025"
-                  />
-                  <Input
-                    label="End Date"
-                    value={job.endDate}
-                    onChange={(e) =>
-                      setExperience(
-                        updateAt(exp, i, { endDate: e.target.value })
-                      )
-                    }
-                    hint='"Present" is valid'
-                  />
-                </div>
-                <BulletEditor
-                  bullets={job.bullets}
-                  onChange={(bullets) =>
-                    setExperience(updateAt(exp, i, { bullets }))
-                  }
-                />
-              </CollapsibleItem>
-            ))}
+            <SortableContext items={exp.map((_, i) => `experience-${i}`)} strategy={verticalListSortingStrategy}>
+              {exp.map((job, i) => (
+                <SortableItem key={`experience-${i}`} id={`experience-${i}`}>
+                  {(dragHandleProps) => (
+                    <CollapsibleItem
+                      title={job.company || "Untitled Role"}
+                      onRemove={() => setExperience(removeAt(exp, i))}
+                      dragHandleProps={dragHandleProps}
+                    >
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          label="Job Title"
+                          value={job.title}
+                          onChange={(e) =>
+                            setExperience(
+                              updateAt(exp, i, { title: e.target.value })
+                            )
+                          }
+                        />
+                        <Input
+                          label="Company"
+                          value={job.company}
+                          onChange={(e) =>
+                            setExperience(
+                              updateAt(exp, i, { company: e.target.value })
+                            )
+                          }
+                        />
+                        <Input
+                          label="Location"
+                          value={job.location ?? ""}
+                          onChange={(e) =>
+                            setExperience(
+                              updateAt(exp, i, {
+                                location: e.target.value || undefined,
+                              })
+                            )
+                          }
+                          hint="Optional"
+                        />
+                        <Input
+                          label="Employment Type"
+                          value={job.employmentType ?? ""}
+                          onChange={(e) =>
+                            setExperience(
+                              updateAt(exp, i, {
+                                employmentType: e.target.value || undefined,
+                              })
+                            )
+                          }
+                          hint="Full-time / Internship / Contract"
+                        />
+                        <Input
+                          label="Start Date"
+                          value={job.startDate}
+                          onChange={(e) =>
+                            setExperience(
+                              updateAt(exp, i, { startDate: e.target.value })
+                            )
+                          }
+                          hint="e.g. Jun 2025"
+                        />
+                        <Input
+                          label="End Date"
+                          value={job.endDate}
+                          onChange={(e) =>
+                            setExperience(
+                              updateAt(exp, i, { endDate: e.target.value })
+                            )
+                          }
+                          hint='"Present" is valid'
+                        />
+                      </div>
+                      <BulletEditor
+                        bullets={job.bullets}
+                        onChange={(bullets) =>
+                          setExperience(updateAt(exp, i, { bullets }))
+                        }
+                      />
+                    </CollapsibleItem>
+                  )}
+                </SortableItem>
+              ))}
+            </SortableContext>
           </SectionEditor>
 
           {/* ---- Projects ---- */}
@@ -583,105 +614,107 @@ export default function Home() {
             }
             addLabel="+ Add project"
           >
-            {data.projects.map((proj, i) => (
-              <CollapsibleItem
-                key={i}
-                title={proj.name || "Untitled Project"}
-                isFirst={i === 0}
-                isLast={i === data.projects.length - 1}
-                onMoveUp={() => setProjects(moveItem(data.projects, i, i - 1))}
-                onMoveDown={() => setProjects(moveItem(data.projects, i, i + 1))}
-                onRemove={() => setProjects(removeAt(data.projects, i))}
-              >
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    label="Project Name"
-                    value={proj.name}
-                    onChange={(e) =>
-                      setProjects(
-                        updateAt(data.projects, i, { name: e.target.value })
-                      )
-                    }
-                  />
-                  <Input
-                    label="Subtitle"
-                    value={proj.subtitle ?? ""}
-                    onChange={(e) =>
-                      setProjects(
-                        updateAt(data.projects, i, {
-                          subtitle: e.target.value || undefined,
-                        })
-                      )
-                    }
-                    hint="Optional short descriptor"
-                  />
-                  <Input
-                    label="Status"
-                    value={proj.status ?? ""}
-                    onChange={(e) =>
-                      setProjects(
-                        updateAt(data.projects, i, {
-                          status: e.target.value || undefined,
-                        })
-                      )
-                    }
-                    hint="In Progress / Completed / Archived"
-                  />
-                  <Input
-                    label="Tech Stack"
-                    value={proj.tech}
-                    onChange={(e) =>
-                      setProjects(
-                        updateAt(data.projects, i, { tech: e.target.value })
-                      )
-                    }
-                    hint="Go · Redis · PostgreSQL"
-                  />
-                  <Input
-                    label="Link"
-                    value={proj.link ?? ""}
-                    onChange={(e) =>
-                      setProjects(
-                        updateAt(data.projects, i, {
-                          link: e.target.value || undefined,
-                        })
-                      )
-                    }
-                    hint="Optional URL"
-                  />
-                  <Input
-                    label="Start Date"
-                    value={proj.startDate ?? ""}
-                    onChange={(e) =>
-                      setProjects(
-                        updateAt(data.projects, i, {
-                          startDate: e.target.value || undefined,
-                        })
-                      )
-                    }
-                    hint="Optional"
-                  />
-                  <Input
-                    label="End Date"
-                    value={proj.endDate ?? ""}
-                    onChange={(e) =>
-                      setProjects(
-                        updateAt(data.projects, i, {
-                          endDate: e.target.value || undefined,
-                        })
-                      )
-                    }
-                    hint="Optional"
-                  />
-                </div>
-                <BulletEditor
-                  bullets={proj.bullets}
-                  onChange={(bullets) =>
-                    setProjects(updateAt(data.projects, i, { bullets }))
-                  }
-                />
-              </CollapsibleItem>
-            ))}
+            <SortableContext items={data.projects.map((_, i) => `projects-${i}`)} strategy={verticalListSortingStrategy}>
+              {data.projects.map((proj, i) => (
+                <SortableItem key={`projects-${i}`} id={`projects-${i}`}>
+                  {(dragHandleProps) => (
+                    <CollapsibleItem
+                      title={proj.name || "Untitled Project"}
+                      onRemove={() => setProjects(removeAt(data.projects, i))}
+                      dragHandleProps={dragHandleProps}
+                    >
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          label="Project Name"
+                          value={proj.name}
+                          onChange={(e) =>
+                            setProjects(
+                              updateAt(data.projects, i, { name: e.target.value })
+                            )
+                          }
+                        />
+                        <Input
+                          label="Subtitle"
+                          value={proj.subtitle ?? ""}
+                          onChange={(e) =>
+                            setProjects(
+                              updateAt(data.projects, i, {
+                                subtitle: e.target.value || undefined,
+                              })
+                            )
+                          }
+                          hint="Optional short descriptor"
+                        />
+                        <Input
+                          label="Status"
+                          value={proj.status ?? ""}
+                          onChange={(e) =>
+                            setProjects(
+                              updateAt(data.projects, i, {
+                                status: e.target.value || undefined,
+                              })
+                            )
+                          }
+                          hint="In Progress / Completed / Archived"
+                        />
+                        <Input
+                          label="Tech Stack"
+                          value={proj.tech}
+                          onChange={(e) =>
+                            setProjects(
+                              updateAt(data.projects, i, { tech: e.target.value })
+                            )
+                          }
+                          hint="Go · Redis · PostgreSQL"
+                        />
+                        <Input
+                          label="Link"
+                          value={proj.link ?? ""}
+                          onChange={(e) =>
+                            setProjects(
+                              updateAt(data.projects, i, {
+                                link: e.target.value || undefined,
+                              })
+                            )
+                          }
+                          hint="Optional URL"
+                        />
+                        <Input
+                          label="Start Date"
+                          value={proj.startDate ?? ""}
+                          onChange={(e) =>
+                            setProjects(
+                              updateAt(data.projects, i, {
+                                startDate: e.target.value || undefined,
+                              })
+                            )
+                          }
+                          hint="Optional"
+                        />
+                        <Input
+                          label="End Date"
+                          value={proj.endDate ?? ""}
+                          onChange={(e) =>
+                            setProjects(
+                              updateAt(data.projects, i, {
+                                endDate: e.target.value || undefined,
+                              })
+                            )
+                          }
+                          hint="Optional"
+                        />
+                      </div>
+                      <BulletEditor
+                        bullets={proj.bullets}
+                        onChange={(bullets) =>
+                          setProjects(updateAt(data.projects, i, { bullets }))
+                        }
+                      />
+                    </CollapsibleItem>
+                  )}
+                </SortableItem>
+              ))}
+            </SortableContext>
           </SectionEditor>
 
           {/* ---- Education ---- */}
@@ -700,113 +733,115 @@ export default function Home() {
             }
             addLabel="+ Add education"
           >
-            {data.education.map((edu, i) => (
-              <CollapsibleItem
-                key={i}
-                title={edu.institution || "Untitled Education"}
-                isFirst={i === 0}
-                isLast={i === data.education.length - 1}
-                onMoveUp={() => setEducation(moveItem(data.education, i, i - 1))}
-                onMoveDown={() => setEducation(moveItem(data.education, i, i + 1))}
-                onRemove={() => setEducation(removeAt(data.education, i))}
-              >
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    label="Degree"
-                    value={edu.degree}
-                    onChange={(e) =>
-                      setEducation(
-                        updateAt(data.education, i, {
-                          degree: e.target.value,
-                        })
-                      )
-                    }
-                    hint="e.g. Integrated M.Tech in Software Engineering"
-                  />
-                  <Input
-                    label="Institution"
-                    value={edu.institution}
-                    onChange={(e) =>
-                      setEducation(
-                        updateAt(data.education, i, {
-                          institution: e.target.value,
-                        })
-                      )
-                    }
-                  />
-                  <Input
-                    label="Location"
-                    value={edu.location ?? ""}
-                    onChange={(e) =>
-                      setEducation(
-                        updateAt(data.education, i, {
-                          location: e.target.value || undefined,
-                        })
-                      )
-                    }
-                    hint="Optional"
-                  />
-                  <Input
-                    label="GPA"
-                    value={edu.gpa ?? ""}
-                    onChange={(e) =>
-                      setEducation(
-                        updateAt(data.education, i, {
-                          gpa: e.target.value || undefined,
-                        })
-                      )
-                    }
-                    hint="Omit if below threshold"
-                  />
-                  <Input
-                    label="Start Year"
-                    value={edu.startYear}
-                    onChange={(e) =>
-                      setEducation(
-                        updateAt(data.education, i, {
-                          startYear: e.target.value,
-                        })
-                      )
-                    }
-                  />
-                  <Input
-                    label="End Year"
-                    value={edu.endYear}
-                    onChange={(e) =>
-                      setEducation(
-                        updateAt(data.education, i, {
-                          endYear: e.target.value,
-                        })
-                      )
-                    }
-                    hint='"Expected 2027" is valid'
-                  />
-                </div>
-                <Textarea
-                  label="Coursework"
-                  value={edu.coursework ?? ""}
-                  onChange={(e) =>
-                    setEducation(
-                      updateAt(data.education, i, {
-                        coursework: e.target.value || undefined,
-                      })
-                    )
-                  }
-                  rows={2}
-                  hint="Comma-separated relevant courses. Max 6."
-                />
-                <BulletEditor
-                  bullets={edu.achievements ?? []}
-                  onChange={(achievements) =>
-                    setEducation(
-                      updateAt(data.education, i, { achievements })
-                    )
-                  }
-                  label="Achievements"
-                  placeholder="Scholarships, awards, honours"
-                />
-              </CollapsibleItem>
-            ))}
+            <SortableContext items={data.education.map((_, i) => `education-${i}`)} strategy={verticalListSortingStrategy}>
+              {data.education.map((edu, i) => (
+                <SortableItem key={`education-${i}`} id={`education-${i}`}>
+                  {(dragHandleProps) => (
+                    <CollapsibleItem
+                      title={edu.institution || "Untitled Education"}
+                      onRemove={() => setEducation(removeAt(data.education, i))}
+                      dragHandleProps={dragHandleProps}
+                    >
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          label="Degree"
+                          value={edu.degree}
+                          onChange={(e) =>
+                            setEducation(
+                              updateAt(data.education, i, {
+                                degree: e.target.value,
+                              })
+                            )
+                          }
+                          hint="e.g. Integrated M.Tech in Software Engineering"
+                        />
+                        <Input
+                          label="Institution"
+                          value={edu.institution}
+                          onChange={(e) =>
+                            setEducation(
+                              updateAt(data.education, i, {
+                                institution: e.target.value,
+                              })
+                            )
+                          }
+                        />
+                        <Input
+                          label="Location"
+                          value={edu.location ?? ""}
+                          onChange={(e) =>
+                            setEducation(
+                              updateAt(data.education, i, {
+                                location: e.target.value || undefined,
+                              })
+                            )
+                          }
+                          hint="Optional"
+                        />
+                        <Input
+                          label="GPA"
+                          value={edu.gpa ?? ""}
+                          onChange={(e) =>
+                            setEducation(
+                              updateAt(data.education, i, {
+                                gpa: e.target.value || undefined,
+                              })
+                            )
+                          }
+                          hint="Omit if below threshold"
+                        />
+                        <Input
+                          label="Start Year"
+                          value={edu.startYear}
+                          onChange={(e) =>
+                            setEducation(
+                              updateAt(data.education, i, {
+                                startYear: e.target.value,
+                              })
+                            )
+                          }
+                        />
+                        <Input
+                          label="End Year"
+                          value={edu.endYear}
+                          onChange={(e) =>
+                            setEducation(
+                              updateAt(data.education, i, {
+                                endYear: e.target.value,
+                              })
+                            )
+                          }
+                          hint='"Expected 2027" is valid'
+                        />
+                      </div>
+                      <Textarea
+                        label="Coursework"
+                        value={edu.coursework ?? ""}
+                        onChange={(e) =>
+                          setEducation(
+                            updateAt(data.education, i, {
+                              coursework: e.target.value || undefined,
+                            })
+                          )
+                        }
+                        rows={2}
+                        hint="Comma-separated relevant courses. Max 6."
+                      />
+                      <BulletEditor
+                        bullets={edu.achievements ?? []}
+                        onChange={(achievements) =>
+                          setEducation(
+                            updateAt(data.education, i, { achievements })
+                          )
+                        }
+                        label="Achievements"
+                        placeholder="Scholarships, awards, honours"
+                      />
+                    </CollapsibleItem>
+                  )}
+                </SortableItem>
+              ))}
+            </SortableContext>
           </SectionEditor>
 
           {/* ---- Certifications ---- */}
@@ -821,62 +856,64 @@ export default function Home() {
             }
             addLabel="+ Add certification"
           >
-            {certs.map((cert, i) => (
-              <CollapsibleItem
-                key={i}
-                title={cert.name || "Untitled Certification"}
-                isFirst={i === 0}
-                isLast={i === certs.length - 1}
-                onMoveUp={() => setCertifications(moveItem(certs, i, i - 1))}
-                onMoveDown={() => setCertifications(moveItem(certs, i, i + 1))}
-                onRemove={() => setCertifications(removeAt(certs, i))}
-              >
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    label="Certification Name"
-                    value={cert.name}
-                    onChange={(e) =>
-                      setCertifications(
-                        updateAt(certs, i, { name: e.target.value })
-                      )
-                    }
-                  />
-                  <Input
-                    label="Issuer"
-                    value={cert.issuer}
-                    onChange={(e) =>
-                      setCertifications(
-                        updateAt(certs, i, { issuer: e.target.value })
-                      )
-                    }
-                  />
-                  <Input
-                    label="Date"
-                    value={cert.date ?? ""}
-                    onChange={(e) =>
-                      setCertifications(
-                        updateAt(certs, i, {
-                          date: e.target.value || undefined,
-                        })
-                      )
-                    }
-                    hint="Optional. e.g. Mar 2024"
-                  />
-                  <Input
-                    label="Credential URL"
-                    value={cert.credentialUrl ?? ""}
-                    onChange={(e) =>
-                      setCertifications(
-                        updateAt(certs, i, {
-                          credentialUrl: e.target.value || undefined,
-                        })
-                      )
-                    }
-                    hint="Optional verification link"
-                  />
-                </div>
-              </CollapsibleItem>
-            ))}
+            <SortableContext items={certs.map((_, i) => `certifications-${i}`)} strategy={verticalListSortingStrategy}>
+              {certs.map((cert, i) => (
+                <SortableItem key={`certifications-${i}`} id={`certifications-${i}`}>
+                  {(dragHandleProps) => (
+                    <CollapsibleItem
+                      title={cert.name || "Untitled Certification"}
+                      onRemove={() => setCertifications(removeAt(certs, i))}
+                      dragHandleProps={dragHandleProps}
+                    >
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          label="Certification Name"
+                          value={cert.name}
+                          onChange={(e) =>
+                            setCertifications(
+                              updateAt(certs, i, { name: e.target.value })
+                            )
+                          }
+                        />
+                        <Input
+                          label="Issuer"
+                          value={cert.issuer}
+                          onChange={(e) =>
+                            setCertifications(
+                              updateAt(certs, i, { issuer: e.target.value })
+                            )
+                          }
+                        />
+                        <Input
+                          label="Date"
+                          value={cert.date ?? ""}
+                          onChange={(e) =>
+                            setCertifications(
+                              updateAt(certs, i, {
+                                date: e.target.value || undefined,
+                              })
+                            )
+                          }
+                          hint="Optional. e.g. Mar 2024"
+                        />
+                        <Input
+                          label="Credential URL"
+                          value={cert.credentialUrl ?? ""}
+                          onChange={(e) =>
+                            setCertifications(
+                              updateAt(certs, i, {
+                                credentialUrl: e.target.value || undefined,
+                              })
+                            )
+                          }
+                          hint="Optional verification link"
+                        />
+                      </div>
+                    </CollapsibleItem>
+                  )}
+                </SortableItem>
+              ))}
+            </SortableContext>
           </SectionEditor>
 
           {/* ---- Open Source ---- */}
@@ -891,79 +928,119 @@ export default function Home() {
             }
             addLabel="+ Add contribution"
           >
-            {oss.map((contrib, i) => (
-              <CollapsibleItem
-                key={i}
-                title={contrib.project || "Untitled Contribution"}
-                isFirst={i === 0}
-                isLast={i === oss.length - 1}
-                onMoveUp={() => setOpenSource(moveItem(oss, i, i - 1))}
-                onMoveDown={() => setOpenSource(moveItem(oss, i, i + 1))}
-                onRemove={() => setOpenSource(removeAt(oss, i))}
-              >
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    label="Project"
-                    value={contrib.project}
-                    onChange={(e) =>
-                      setOpenSource(
-                        updateAt(oss, i, { project: e.target.value })
-                      )
-                    }
-                    hint="e.g. kubernetes/kubernetes"
-                  />
-                  <Input
-                    label="PR Link"
-                    value={contrib.prLink ?? ""}
-                    onChange={(e) =>
-                      setOpenSource(
-                        updateAt(oss, i, {
-                          prLink: e.target.value || undefined,
-                        })
-                      )
-                    }
-                    hint="Optional"
-                  />
-                </div>
-                <Textarea
-                  label="Description"
-                  value={contrib.description}
-                  onChange={(e) =>
-                    setOpenSource(
-                      updateAt(oss, i, { description: e.target.value })
-                    )
-                  }
-                  rows={2}
-                  hint="One line: what you contributed."
-                />
-                <Input
-                  label="Impact"
-                  value={contrib.impact ?? ""}
-                  onChange={(e) =>
-                    setOpenSource(
-                      updateAt(oss, i, {
-                        impact: e.target.value || undefined,
-                      })
-                    )
-                  }
-                  hint='Optional. e.g. "Merged. Affects 10k+ users."'
-                />
-              </CollapsibleItem>
-            ))}
+            <SortableContext items={oss.map((_, i) => `openSource-${i}`)} strategy={verticalListSortingStrategy}>
+              {oss.map((contrib, i) => (
+                <SortableItem key={`openSource-${i}`} id={`openSource-${i}`}>
+                  {(dragHandleProps) => (
+                    <CollapsibleItem
+                      title={contrib.project || "Untitled Contribution"}
+                      onRemove={() => setOpenSource(removeAt(oss, i))}
+                      dragHandleProps={dragHandleProps}
+                    >
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          label="Project"
+                          value={contrib.project}
+                          onChange={(e) =>
+                            setOpenSource(
+                              updateAt(oss, i, { project: e.target.value })
+                            )
+                          }
+                          hint="e.g. kubernetes/kubernetes"
+                        />
+                        <Input
+                          label="PR Link"
+                          value={contrib.prLink ?? ""}
+                          onChange={(e) =>
+                            setOpenSource(
+                              updateAt(oss, i, {
+                                prLink: e.target.value || undefined,
+                              })
+                            )
+                          }
+                          hint="Optional"
+                        />
+                      </div>
+                      <Textarea
+                        label="Description"
+                        value={contrib.description}
+                        onChange={(e) =>
+                          setOpenSource(
+                            updateAt(oss, i, { description: e.target.value })
+                          )
+                        }
+                        rows={2}
+                        hint="One line: what you contributed."
+                      />
+                      <Input
+                        label="Impact"
+                        value={contrib.impact ?? ""}
+                        onChange={(e) =>
+                          setOpenSource(
+                            updateAt(oss, i, {
+                              impact: e.target.value || undefined,
+                            })
+                          )
+                        }
+                        hint="Optional"
+                      />
+                    </CollapsibleItem>
+                  )}
+                </SortableItem>
+              ))}
+            </SortableContext>
           </SectionEditor>
 
           {/* Bottom spacer */}
           <div className="h-8 shrink-0" />
         </div>
+        </DndContext>
 
         {/* Right column — Preview */}
         <div
           ref={previewColRef}
-          className="h-full overflow-y-auto flex-1 bg-gray-100/50 flex justify-center items-start py-8"
+          className="relative h-full overflow-y-auto flex-1 bg-gray-50 flex justify-center items-start py-8"
         >
+          {/* Ambient Glows */}
+          <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-400/20 rounded-full mix-blend-multiply filter blur-[100px] animate-pulse pointer-events-none" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-purple-400/20 rounded-full mix-blend-multiply filter blur-[120px] animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
+          
+          {/* Floating Toolbar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="fixed bottom-8 right-[calc(27.5%-100px)] bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.12)] rounded-full px-4 py-2 flex items-center gap-2 z-50"
+          >
+            <button
+              onClick={() => setZoomLevel((prev) => (prev === "fit" ? fitScale - 0.1 : prev - 0.1))}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/60 text-gray-700 transition-colors"
+              title="Zoom Out"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+            <span className="text-xs font-semibold text-gray-700 min-w-[50px] text-center">
+              {zoomLevel === "fit" ? "Fit" : `${Math.round(zoomLevel * 100)}%`}
+            </span>
+            <button
+              onClick={() => setZoomLevel((prev) => (prev === "fit" ? fitScale + 0.1 : prev + 0.1))}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/60 text-gray-700 transition-colors"
+              title="Zoom In"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+            <div className="w-[1px] h-4 bg-gray-300 mx-1"></div>
+            <button
+              onClick={() => setZoomLevel("fit")}
+              className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${zoomLevel === "fit" ? "bg-blue-100/80 text-blue-700" : "hover:bg-white/60 text-gray-600"}`}
+            >
+              Fit to Screen
+            </button>
+          </motion.div>
+
           <div
+            className="relative z-10"
             style={{
-              transform: `scale(${previewScale})`,
+              transform: `scale(${computedScale})`,
               transformOrigin: "top center",
               width: `${PREVIEW_WIDTH + 32}px`,
               display: "flex",
@@ -983,7 +1060,7 @@ export default function Home() {
             )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

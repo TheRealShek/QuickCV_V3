@@ -12,7 +12,7 @@ export function Input({ label, hint, className = "", ...props }: InputProps) {
     <div className="flex flex-col gap-0.5">
       {label && <label className="text-xs font-medium text-gray-600">{label}</label>}
       <input
-        className={`border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 ${className}`}
+        className={`bg-white/50 border border-gray-200 rounded-lg px-3 py-2 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 hover:border-gray-300 ${className}`}
         {...props}
       />
       {hint && <span className="text-xs text-gray-400">{hint}</span>}
@@ -30,7 +30,7 @@ export function Textarea({ label, hint, className = "", ...props }: TextareaProp
     <div className="flex flex-col gap-0.5">
       {label && <label className="text-xs font-medium text-gray-600">{label}</label>}
       <textarea
-        className={`border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-y ${className}`}
+        className={`bg-white/50 border border-gray-200 rounded-lg px-3 py-2 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 hover:border-gray-300 resize-y ${className}`}
         {...props}
       />
       {hint && <span className="text-xs text-gray-400">{hint}</span>}
