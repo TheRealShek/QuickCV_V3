@@ -234,7 +234,7 @@ export function ExperienceSection({ data }: { data: ResumeData }) {
                 marginBottom: "2pt",
               }}
             >
-              {metaParts.join(" · ")}
+              {cleanMetaParts.length > 0 && cleanMetaParts.join(" · ")}
             </div>
             {/* Bullets */}
             {job.bullets.map((bullet, j) => (
