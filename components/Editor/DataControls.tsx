@@ -49,7 +49,8 @@ export default function DataControls({ data, onImport }: DataControlsProps) {
 
         try {
             const text = await file.text();
-            const parsedJSON = JSON.parse(text);
+            const cleaned = text.replace(/^```json\s*|^```\s*|```\s*$/gm, '').trim();
+            const parsedJSON = JSON.parse(cleaned);
 
             const validation = resumeSchema.safeParse(parsedJSON);
 
@@ -67,7 +68,14 @@ export default function DataControls({ data, onImport }: DataControlsProps) {
                 ...defaultResumeData,
                 ...imported,
                 meta: { ...defaultResumeData.meta, ...imported.meta },
-                header: { ...defaultResumeData.header, ...imported.header },
+                header: { 
+                    ...defaultResumeData.header, 
+                    ...imported.header,
+                    contact: {
+                        ...defaultResumeData.header.contact,
+                        ...imported.header?.contact,
+                    }
+                },
             };
 
             onImport(merged);

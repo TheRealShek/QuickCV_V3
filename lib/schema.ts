@@ -6,15 +6,15 @@ const pageSizeSchema = z.enum(["LETTER", "A4"]);
 
 const metaSchema = z.object({
   accentColor: z.string(), // hex color, e.g. "#1A56DB"
-  baseFontSize: z.number().min(8).max(12), // points
-  nameSize: z.number().min(18).max(28), // points
-  titleSize: z.number().min(9).max(13), // points
-  pageMargin: z.number().min(30).max(60), // points
-  sectionSpacing: z.number(), // gap before each section
-  bulletSpacing: z.number(), // gap between bullets
+  baseFontSize: z.coerce.number().min(8).max(12), // points
+  nameSize: z.coerce.number().min(18).max(28), // points
+  titleSize: z.coerce.number().min(9).max(13), // points
+  pageMargin: z.coerce.number().min(30).max(60), // points
+  sectionSpacing: z.coerce.number(), // gap before each section
+  bulletSpacing: z.coerce.number(), // gap between bullets
   pageSize: pageSizeSchema, // "LETTER" | "A4"
-  hiddenSections: z.array(z.string()).optional(),
-  sectionOrder: z.array(z.string()).optional(),
+  hiddenSections: z.array(z.string()).nullable().optional().transform(v => v ?? []),
+  sectionOrder: z.array(z.string()).nullable().optional().transform(v => v ?? []),
 });
 
 const contactSchema = z.object({
@@ -88,11 +88,11 @@ export const resumeSchema = z.object({
   header: headerSchema,
   summary: z.string(),
   skills: z.array(skillSchema),
-  experience: z.array(experienceSchema).optional(),
+  experience: z.array(experienceSchema).nullable().optional().transform(v => v ?? []),
   projects: z.array(projectSchema),
   education: z.array(educationSchema),
-  certifications: z.array(certificationSchema).optional(),
-  openSource: z.array(openSourceSchema).optional(),
+  certifications: z.array(certificationSchema).nullable().optional().transform(v => v ?? []),
+  openSource: z.array(openSourceSchema).nullable().optional().transform(v => v ?? []),
 });
 
 export type ResumeDataFromSchema = z.infer<typeof resumeSchema>;

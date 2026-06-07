@@ -98,6 +98,7 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [schemaBannerDismissed, setSchemaBannerDismissed] = useState(false);
 
   // ON LOAD: check localStorage for saved resume
   useEffect(() => {
@@ -269,6 +270,45 @@ export default function Home() {
       <div className="flex flex-1">
         {/* Left column — Editor */}
         <div className="h-[100vh] overflow-y-auto overflow-x-visible isolate flex-shrink-0 w-[40%] p-4 flex flex-col gap-3 border-r border-gray-200 bg-white">
+
+          {/* ---- Schema guide callout ---- */}
+          {!schemaBannerDismissed && (
+            <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-blue-50 border border-blue-100 text-[12px] text-blue-700 leading-relaxed">
+              <span className="shrink-0 mt-0.5">📋</span>
+              <span>
+                New here? Read the{" "}
+                <a
+                  href="/schema"
+                  className="font-semibold underline underline-offset-2 hover:text-blue-900"
+                >
+                  Schema Reference
+                </a>{" "}
+                to understand the JSON format, or use the AI prompt to generate
+                your resume data. Also available as{" "}
+                <a
+                  href="/api/schema"
+                  className="font-semibold underline underline-offset-2 hover:text-blue-900"
+                >
+                  JSON
+                </a>{" "}
+                and{" "}
+                <a
+                  href="/api/schema?fmt=text"
+                  className="font-semibold underline underline-offset-2 hover:text-blue-900"
+                >
+                  plain text
+                </a>
+                .
+              </span>
+              <button
+                onClick={() => setSchemaBannerDismissed(true)}
+                className="shrink-0 ml-auto text-blue-400 hover:text-blue-700 transition-colors"
+                aria-label="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+          )}
 
           {/* ---- Auto-save Status ---- */}
           <div className="flex justify-between items-center text-[11px] text-[#9CA3AF]">
