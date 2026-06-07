@@ -73,15 +73,16 @@ export default function ResumePreview({ data }: ResumePreviewProps) {
       >
         {/* Resume page — white background, fixed width, page padding */}
         <div
-          className="transition-all duration-500 ease-in-out dark:invert dark:hue-rotate-180"
+          className="transition-colors duration-500 ease-in-out"
           style={{
             width: `${PREVIEW_WIDTH}px`,
             minHeight: `${PAGE_DIMENSIONS[data.meta.pageSize].height}px`,
-            backgroundColor: "#ffffff",
+            backgroundColor: "var(--cv-bg)",
             fontFamily: "Inter, sans-serif",
             padding: `${data.meta.pageMargin}pt`,
             boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06)",
             position: "relative",
+            overflow: "hidden",
           }}
         >
           {/* Page Boundaries */}

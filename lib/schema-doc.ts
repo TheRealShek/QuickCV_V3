@@ -1,285 +1,16 @@
-// lib/schema-doc.ts — Documentation-only schema, example data, and AI prompt builder.
-// Keeps lib/schema.ts (validation logic) clean. This file is purely for the /schema page.
+// lib/schema-doc.ts — Single source of truth for schema documentation.
+// Keeps lib/schema.ts (validation logic) clean. This file is purely for:
+//   1. The /schema reference page (fieldReference + exampleResume)
+//   2. The /api/schema plain-text endpoint (buildPlainTextSchema)
 
-import { z } from "zod";
 import { defaultResumeData } from "./resume-data";
 import type { ResumeData } from "@/types/resume";
 
 // ---------------------------------------------------------------------------
-// Described schema — mirrors lib/schema.ts structure with .describe() annotations.
-// NOT used for validation. Only used to generate JSON Schema docs.
-// ---------------------------------------------------------------------------
-
-const describedPageSize = z
-  .enum(["LETTER", "A4"])
-  .describe("Page format: 'LETTER' (US 8.5×11) or 'A4' (210×297mm)");
-
-const describedMeta = z.object({
-  accentColor: z.string().describe("Hex color for headings and links, e.g. '#1A56DB'"),
-  baseFontSize: z.number().min(8).max(12).describe("Body text size in points (8–12)"),
-  nameSize: z.number().min(18).max(28).describe("Name font size in points (18–28)"),
-  titleSize: z.number().min(9).max(13).describe("Role/title font size in points (9–13)"),
-  pageMargin: z.number().min(30).max(60).describe("All four page margins in points (30–60)"),
-  sectionSpacing: z.number().describe("Vertical gap before each section in points"),
-  bulletSpacing: z.number().describe("Vertical gap between bullet points in points"),
-  pageSize: describedPageSize,
-  hiddenSections: z
-    .array(z.string())
-    .optional()
-    .describe("Section keys to hide from PDF: summary, skills, experience, projects, education, certifications, openSource"),
-  sectionOrder: z
-    .array(z.string())
-    .optional()
-    .describe("Render order of sections. Valid keys: summary, skills, experience, projects, education, certifications, openSource"),
-});
-
-const describedContact = z.object({
-  email: z.string().describe("Email address"),
-  phone: z.string().describe("Phone number with country code, e.g. '+1-555-0100'"),
-  city: z.string().describe("City and state/country, e.g. 'San Francisco, CA'"),
-  linkedin: z.string().optional().describe("LinkedIn profile URL or handle"),
-  github: z.string().optional().describe("GitHub profile URL or username"),
-  portfolio: z.string().optional().describe("Personal website or portfolio URL"),
-});
-
-const describedHeader = z.object({
-  name: z.string().describe("Full name as it should appear on the resume"),
-  title: z.string().describe("Professional title or target role, e.g. 'Senior Software Engineer'"),
-  contact: describedContact,
-});
-
-const describedSkill = z.object({
-  label: z.string().describe("Skill category, e.g. 'Backend', 'Frontend', 'DevOps'"),
-  value: z.string().describe("Comma-separated list of technologies, e.g. 'Go, gRPC, PostgreSQL'"),
-});
-
-const describedExperience = z.object({
-  title: z.string().describe("Job title"),
-  company: z.string().describe("Company or organization name"),
-  location: z.string().optional().describe("City/state or 'Remote'"),
-  startDate: z.string().describe("Start date, e.g. 'Jan 2021' or 'March 2020'"),
-  endDate: z.string().describe("End date or 'Present' for current roles"),
-  employmentType: z
-    .string()
-    .optional()
-    .describe("One of: 'Full-time', 'Internship', 'Contract', 'Freelance'"),
-  bullets: z.array(z.string()).describe("Achievement bullets — start each with a strong action verb"),
-});
-
-const describedProject = z.object({
-  name: z.string().describe("Project name"),
-  subtitle: z.string().optional().describe("Short tagline or description"),
-  status: z.string().optional().describe("One of: 'In Progress', 'Completed', 'Archived'"),
-  tech: z.string().describe("Tech stack used, e.g. 'React, TypeScript, Firebase'"),
-  link: z.string().optional().describe("URL to project repo or live demo"),
-  startDate: z.string().optional().describe("Project start date"),
-  endDate: z.string().optional().describe("Project end date"),
-  bullets: z.array(z.string()).describe("Key outcomes or features — start each with a strong action verb"),
-});
-
-const describedEducation = z.object({
-  degree: z.string().describe("Degree name, e.g. 'B.S. Computer Science'"),
-  institution: z.string().describe("University or school name"),
-  location: z.string().optional().describe("City/state of the institution"),
-  startYear: z.string().describe("Start year, e.g. '2013'"),
-  endYear: z.string().describe("End year or 'Expected 2027' for in-progress degrees"),
-  gpa: z.string().optional().describe("GPA — omit if below 3.5"),
-  coursework: z.string().optional().describe("Comma-separated relevant coursework"),
-  achievements: z.array(z.string()).optional().describe("Academic honors or achievements"),
-});
-
-const describedCertification = z.object({
-  name: z.string().describe("Certification name, e.g. 'AWS Solutions Architect'"),
-  issuer: z.string().describe("Issuing organization"),
-  date: z.string().optional().describe("Date obtained, e.g. '2023'"),
-  credentialUrl: z.string().optional().describe("Verification URL"),
-});
-
-const describedOpenSource = z.object({
-  project: z.string().describe("Repo in 'org/repo' format, e.g. 'kubernetes/kubernetes'"),
-  description: z.string().describe("What you contributed"),
-  prLink: z.string().optional().describe("URL to the PR or commit"),
-  impact: z.string().optional().describe("Outcome or reach of the contribution"),
-});
-
-const describedResumeSchema = z.object({
-  meta: describedMeta.describe("Styling and layout configuration"),
-  header: describedHeader.describe("Name, title, and contact information"),
-  summary: z.string().describe("2–3 sentence professional summary"),
-  skills: z.array(describedSkill).describe("Technical skill categories with comma-separated values"),
-  experience: z.array(describedExperience).optional().describe("Work experience entries, most recent first"),
-  projects: z.array(describedProject).describe("Personal or professional projects"),
-  education: z.array(describedEducation).describe("Education history"),
-  certifications: z.array(describedCertification).optional().describe("Professional certifications"),
-  openSource: z.array(describedOpenSource).optional().describe("Open source contributions"),
-});
-
-// ---------------------------------------------------------------------------
-// JSON Schema output
-// ---------------------------------------------------------------------------
-
-/** Machine-readable JSON Schema derived from the described Zod schema */
-export function getJSONSchema(): Record<string, unknown> {
-  return z.toJSONSchema(describedResumeSchema, { target: "draft-2020-12" });
-}
-
-// ---------------------------------------------------------------------------
-// Realistic example — extends defaultResumeData with filled-in content
-// ---------------------------------------------------------------------------
-
-export const exampleResume: ResumeData = {
-  ...defaultResumeData,
-  meta: {
-    ...defaultResumeData.meta,
-    accentColor: "#1A56DB",
-    baseFontSize: 9,
-    nameSize: 22,
-    titleSize: 10.5,
-    pageMargin: 40,
-    sectionSpacing: 10,
-    bulletSpacing: 2,
-    pageSize: "LETTER",
-    sectionOrder: [
-      "summary",
-      "skills",
-      "experience",
-      "projects",
-      "education",
-      "certifications",
-      "openSource",
-    ],
-  },
-  header: {
-    name: "Jane Doe",
-    title: "Senior Software Engineer",
-    contact: {
-      email: "jane@example.com",
-      phone: "+1-555-0100",
-      city: "San Francisco, CA",
-      linkedin: "linkedin.com/in/janedoe",
-      github: "github.com/janedoe",
-    },
-  },
-  summary:
-    "Senior engineer with 7 years of experience in distributed systems and cloud-native infrastructure. Passionate about developer tooling and open source.",
-  skills: [
-    { label: "Backend", value: "Go, gRPC, PostgreSQL, Redis, Kafka" },
-    { label: "Frontend", value: "React, TypeScript, Next.js, Tailwind CSS" },
-    { label: "DevOps", value: "Kubernetes, Terraform, GitHub Actions, AWS" },
-  ],
-  experience: [
-    {
-      title: "Senior Software Engineer",
-      company: "Acme Corp",
-      location: "San Francisco, CA",
-      startDate: "Jan 2021",
-      endDate: "Present",
-      employmentType: "Full-time",
-      bullets: [
-        "Designed and shipped a real-time data pipeline processing 2M events/day using Kafka and Go",
-        "Led migration from monolith to microservices, reducing deploy time by 60%",
-        "Mentored 4 junior engineers through structured code review and pairing sessions",
-      ],
-    },
-    {
-      title: "Software Engineer",
-      company: "StartupXYZ",
-      location: "Remote",
-      startDate: "Jun 2018",
-      endDate: "Dec 2020",
-      employmentType: "Full-time",
-      bullets: [
-        "Built the core REST API serving 50K daily active users with Node.js and PostgreSQL",
-        "Implemented CI/CD pipeline with GitHub Actions, cutting release cycles from weekly to daily",
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "OpenTracer",
-      subtitle: "Lightweight distributed tracing SDK",
-      tech: "Go, gRPC, Jaeger",
-      status: "Completed",
-      link: "https://github.com/janedoe/opentracer",
-      bullets: [
-        "Built a tracing SDK adopted by 3 internal teams, reducing debugging time by 40%",
-        "Implemented context propagation across 12 microservices with zero-config setup",
-      ],
-    },
-    {
-      name: "DevDash",
-      subtitle: "Developer productivity dashboard",
-      tech: "React, TypeScript, D3.js",
-      status: "In Progress",
-      bullets: [
-        "Designed interactive charts visualizing CI/CD metrics across 8 repositories",
-        "Integrated GitHub API for real-time PR review tracking and team velocity analysis",
-      ],
-    },
-  ],
-  education: [
-    {
-      degree: "B.S. Computer Science",
-      institution: "UC Berkeley",
-      location: "Berkeley, CA",
-      startYear: "2013",
-      endYear: "2017",
-      gpa: "3.8",
-      coursework: "Distributed Systems, Operating Systems, Algorithms, Machine Learning",
-    },
-  ],
-  certifications: [
-    {
-      name: "AWS Solutions Architect — Associate",
-      issuer: "Amazon Web Services",
-      date: "2023",
-      credentialUrl: "https://aws.amazon.com/verification/...",
-    },
-  ],
-  openSource: [
-    {
-      project: "kubernetes/kubernetes",
-      description: "Fixed race condition in scheduler queue causing pod starvation under high load",
-      prLink: "https://github.com/kubernetes/kubernetes/pull/12345",
-      impact: "Merged in v1.28, affects all clusters",
-    },
-  ],
-};
-
-// ---------------------------------------------------------------------------
-// AI prompt builder
-// ---------------------------------------------------------------------------
-
-export function buildAIPrompt(): string {
-  const schema = JSON.stringify(getJSONSchema(), null, 2);
-  const example = JSON.stringify(exampleResume, null, 2);
-
-  return `You are a resume data assistant. Generate a JSON object matching the QuickCV schema below.
-
-RULES:
-- Return ONLY the raw JSON object. No markdown, no code fences, no explanation.
-- All required fields must be present. Optional fields can be omitted if not applicable.
-- Include at least 2 entries for experience, projects, and skills arrays. Single-item arrays look sparse on a resume.
-- "endDate" accepts "Present" for current roles. "endYear" accepts "Expected 2027" for in-progress degrees.
-- "employmentType" must be one of: "Full-time", "Internship", "Contract", "Freelance".
-- "status" must be one of: "In Progress", "Completed", "Archived".
-- "pageSize" must be "LETTER" or "A4".
-- Omit "gpa" if it would be below 3.5.
-- Keep bullet points concise and action-oriented — start each with a strong verb.
-- Each experience/project should have 2–4 bullet points.
-
-JSON SCHEMA:
-${schema}
-
-EXAMPLE:
-${example}
-
-Now generate a resume JSON for the following person:`;
-}
-
-// ---------------------------------------------------------------------------
 // Field reference — structured documentation for the /schema page.
-// Serves both humans reading the docs and AI agents parsing the page.
+// This is the SINGLE SOURCE OF TRUTH for schema documentation.
+// Serves humans reading the docs, AI agents parsing the page, and
+// the plain-text /api/schema endpoint.
 // ---------------------------------------------------------------------------
 
 export interface FieldDoc {
@@ -440,3 +171,207 @@ export const fieldReference: SectionDoc[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Realistic example — extends defaultResumeData with filled-in content
+// ---------------------------------------------------------------------------
+
+export const exampleResume: ResumeData = {
+  ...defaultResumeData,
+  meta: {
+    ...defaultResumeData.meta,
+    accentColor: "#1A56DB",
+    baseFontSize: 9,
+    nameSize: 22,
+    titleSize: 10.5,
+    pageMargin: 40,
+    sectionSpacing: 10,
+    bulletSpacing: 2,
+    pageSize: "LETTER",
+    sectionOrder: [
+      "summary",
+      "skills",
+      "experience",
+      "projects",
+      "education",
+      "certifications",
+      "openSource",
+    ],
+  },
+  header: {
+    name: "Jane Doe",
+    title: "Senior Software Engineer",
+    contact: {
+      email: "jane@example.com",
+      phone: "+1-555-0100",
+      city: "San Francisco, CA",
+      linkedin: "linkedin.com/in/janedoe",
+      github: "github.com/janedoe",
+    },
+  },
+  summary:
+    "Senior engineer with 7 years of experience in distributed systems and cloud-native infrastructure. Passionate about developer tooling and open source.",
+  skills: [
+    { label: "Backend", value: "Go, gRPC, PostgreSQL, Redis, Kafka" },
+    { label: "Frontend", value: "React, TypeScript, Next.js, Tailwind CSS" },
+    { label: "DevOps", value: "Kubernetes, Terraform, GitHub Actions, AWS" },
+  ],
+  experience: [
+    {
+      title: "Senior Software Engineer",
+      company: "Acme Corp",
+      location: "San Francisco, CA",
+      startDate: "Jan 2021",
+      endDate: "Present",
+      employmentType: "Full-time",
+      bullets: [
+        "Designed and shipped a real-time data pipeline processing 2M events/day using Kafka and Go",
+        "Led migration from monolith to microservices, reducing deploy time by 60%",
+        "Mentored 4 junior engineers through structured code review and pairing sessions",
+      ],
+    },
+    {
+      title: "Software Engineer",
+      company: "StartupXYZ",
+      location: "Remote",
+      startDate: "Jun 2018",
+      endDate: "Dec 2020",
+      employmentType: "Full-time",
+      bullets: [
+        "Built the core REST API serving 50K daily active users with Node.js and PostgreSQL",
+        "Implemented CI/CD pipeline with GitHub Actions, cutting release cycles from weekly to daily",
+      ],
+    },
+  ],
+  projects: [
+    {
+      name: "OpenTracer",
+      subtitle: "Lightweight distributed tracing SDK",
+      tech: "Go, gRPC, Jaeger",
+      status: "Completed",
+      link: "https://github.com/janedoe/opentracer",
+      bullets: [
+        "Built a tracing SDK adopted by 3 internal teams, reducing debugging time by 40%",
+        "Implemented context propagation across 12 microservices with zero-config setup",
+      ],
+    },
+    {
+      name: "DevDash",
+      subtitle: "Developer productivity dashboard",
+      tech: "React, TypeScript, D3.js",
+      status: "In Progress",
+      bullets: [
+        "Designed interactive charts visualizing CI/CD metrics across 8 repositories",
+        "Integrated GitHub API for real-time PR review tracking and team velocity analysis",
+      ],
+    },
+  ],
+  education: [
+    {
+      degree: "B.S. Computer Science",
+      institution: "UC Berkeley",
+      location: "Berkeley, CA",
+      startYear: "2013",
+      endYear: "2017",
+      gpa: "3.8",
+      coursework: "Distributed Systems, Operating Systems, Algorithms, Machine Learning",
+    },
+  ],
+  certifications: [
+    {
+      name: "AWS Solutions Architect — Associate",
+      issuer: "Amazon Web Services",
+      date: "2023",
+      credentialUrl: "https://aws.amazon.com/verification/...",
+    },
+  ],
+  openSource: [
+    {
+      project: "kubernetes/kubernetes",
+      description: "Fixed race condition in scheduler queue causing pod starvation under high load",
+      prLink: "https://github.com/kubernetes/kubernetes/pull/12345",
+      impact: "Merged in v1.28, affects all clusters",
+    },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+// Plain-text schema builder — token-efficient output for AI agents.
+// This is what /api/schema returns. Encodes fieldReference + exampleResume
+// into a compact, column-aligned DSL that AI models parse trivially.
+// ---------------------------------------------------------------------------
+
+function formatTopLevelStructure(): string {
+  const lines: string[] = [];
+  lines.push(`## Top-level structure\n`);
+  lines.push(`| Key | Type | Required | Description |`);
+  lines.push(`|---|---|---|---|`);
+  
+  for (const section of fieldReference) {
+    const kind = section.isArray ? `${section.title}[]` : "object";
+    const typeLabel = section.key === "summary" ? `string` : kind;
+    const req = section.rootRequired ? "required" : "optional";
+    lines.push(`| \`${section.key}\` | \`${typeLabel}\` | ${req} | ${section.description} |`);
+  }
+  
+  return lines.join("\n");
+}
+
+function formatSection(section: SectionDoc): string {
+  const kind = section.isArray ? "array" : section.key === "summary" ? "string" : "object";
+  const req = section.rootRequired ? "required" : "optional";
+  const lines: string[] = [];
+
+  lines.push(`### ${section.key} (${req} ${kind})`);
+  lines.push(`${section.description}\n`);
+  
+  lines.push(`| Field | Type | Status | Description |`);
+  lines.push(`|---|---|---|---|`);
+
+  for (const field of section.fields) {
+    const status = field.required ? "required" : "optional";
+    lines.push(
+      `| \`${field.name}\` | \`${field.type}\` | ${status} | ${field.description} |`
+    );
+  }
+
+  return lines.join("\n");
+}
+
+export function buildPlainTextSchema(): string {
+  const topLevel = formatTopLevelStructure();
+  const sections = fieldReference.map(formatSection).join("\n\n");
+  const example = JSON.stringify(exampleResume, null, 2);
+
+  return `# QuickCV Schema Reference
+
+This is the complete reference for the QuickCV resume JSON format.
+
+## RULES
+- Return ONLY raw JSON. No markdown, no code fences, no explanation.
+- All required fields must be present. Optional fields can be omitted.
+- Include at least 2 entries for experience, projects, and skills arrays.
+- Bullets: start with a strong action verb, aim for 2–4 per entry.
+- employmentType must be one of: "Full-time", "Internship", "Contract", "Freelance".
+- status must be one of: "In Progress", "Completed", "Archived".
+- pageSize must be "LETTER" or "A4".
+- Omit gpa if it would be below 3.5.
+- endDate accepts "Present" for current roles. endYear accepts "Expected 2027" for in-progress degrees.
+
+${topLevel}
+
+## Field Reference
+
+Every field in every section, with its type, whether it's required, and what it does.
+
+${sections}
+
+## Full Example
+
+A complete, realistic resume JSON that passes validation.
+
+\`\`\`json
+${example}
+\`\`\`
+
+Now generate a resume JSON for the following person:`;
+}

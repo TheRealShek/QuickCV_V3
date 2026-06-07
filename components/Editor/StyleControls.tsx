@@ -127,7 +127,7 @@ export default function StyleControls({ meta, onChange }: StyleControlsProps) {
                   const v = e.target.value;
                   if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) onChange({ accentColor: v });
                 }}
-                className="flex-1 bg-white/50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-sm font-mono text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="flex-1 bg-white/50 dark:bg-[#1a1a1a] border border-gray-300 dark:border-white/10 rounded px-2 py-1 text-sm font-mono text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-300 dark:hover:border-white/20 transition-all"
                 maxLength={7}
               />
             </div>
@@ -261,7 +261,7 @@ export default function StyleControls({ meta, onChange }: StyleControlsProps) {
               onChange={(e) =>
                 onChange({ pageSize: e.target.value as "LETTER" | "A4" })
               }
-              className="relative z-50 bg-white/50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="relative z-50 bg-white/50 dark:bg-[#1a1a1a] border border-gray-300 dark:border-white/10 rounded px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-gray-300 dark:hover:border-white/20 transition-all"
             >
               <option value="LETTER">Letter (8.5 × 11)</option>
               <option value="A4">A4 (210 × 297mm)</option>

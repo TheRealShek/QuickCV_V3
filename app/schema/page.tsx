@@ -6,9 +6,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  getJSONSchema,
   exampleResume,
-  buildAIPrompt,
+  buildPlainTextSchema,
   fieldReference,
 } from "@/lib/schema-doc";
 import CopyButton from "@/components/ui/CopyButton";
@@ -24,8 +23,7 @@ export const metadata: Metadata = {
 // Pre-compute serialised strings at build/request time (server only)
 // ---------------------------------------------------------------------------
 
-const aiPrompt = buildAIPrompt();
-const jsonSchema = JSON.stringify(getJSONSchema(), null, 2);
+const schemaText = buildPlainTextSchema();
 const exampleJson = JSON.stringify(exampleResume, null, 2);
 
 // ---------------------------------------------------------------------------
@@ -84,9 +82,6 @@ export default function SchemaPage() {
             </a>
             <a href="#full-example" className="text-sm text-[#1A56DB] hover:underline">
               Full Example
-            </a>
-            <a href="#json-schema" className="text-sm text-[#1A56DB] hover:underline">
-              JSON Schema (machine-readable)
             </a>
             <a href="#import-guide" className="text-sm text-[#1A56DB] hover:underline">
               How to Import
@@ -268,7 +263,7 @@ export default function SchemaPage() {
           </div>
         </section>
 
-        {/* ── AI Prompt ────────────────────────────────────────────── */}
+        {/* ── AI Prompt (plain text schema) ─────────────────────────── */}
         <section id="ai-prompt" className="mb-12">
           <div className="mb-4">
             <h2 className="text-2xl font-bold text-gray-900">
@@ -277,14 +272,17 @@ export default function SchemaPage() {
             <p className="mt-1 text-sm text-gray-500">
               Copy this prompt and paste it into ChatGPT, Claude, Gemini, or any
               AI assistant. It contains the full schema and a working example so
-              the AI knows exactly what to generate.
+              the AI knows exactly what to generate. Also available via{" "}
+              <a href="/api/schema" className="text-[#1A56DB] underline underline-offset-2 hover:text-[#1A56DB]/80">
+                <code className="text-xs">curl /api/schema</code>
+              </a>.
             </p>
           </div>
 
           <div className="relative rounded-xl bg-gray-900 shadow-lg ring-1 ring-white/5">
-            <CopyButton text={aiPrompt} label="Copy Prompt" />
+            <CopyButton text={schemaText} label="Copy Prompt" />
             <pre className="overflow-x-auto p-5 pt-12 text-sm leading-relaxed text-gray-100 font-mono whitespace-pre-wrap break-words max-h-[32rem] overflow-y-auto">
-              {aiPrompt}
+              {schemaText}
             </pre>
           </div>
         </section>
@@ -305,21 +303,7 @@ export default function SchemaPage() {
           </CollapsibleSection>
         </section>
 
-        {/* ── JSON Schema ──────────────────────────────────────────── */}
-        <section id="json-schema" className="mb-12">
-          <CollapsibleSection title="JSON Schema" badge="Draft 2020-12" defaultOpen={false}>
-            <p className="text-sm text-gray-500 mb-4">
-              Machine-readable JSON Schema. Use this for programmatic validation
-              or pass it to an AI that prefers structured schema formats.
-            </p>
-            <div className="relative rounded-xl bg-gray-900 shadow-inner">
-              <CopyButton text={jsonSchema} label="Copy Schema" />
-              <pre className="overflow-x-auto p-5 pt-12 text-sm leading-relaxed text-gray-100 font-mono max-h-[32rem] overflow-y-auto">
-                {jsonSchema}
-              </pre>
-            </div>
-          </CollapsibleSection>
-        </section>
+
 
         {/* ── How to Import ────────────────────────────────────────── */}
         <section id="import-guide" className="mb-16">

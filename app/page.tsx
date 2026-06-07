@@ -271,9 +271,9 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-[100vh] overflow-hidden bg-gray-100 dark:bg-gray-900 transition-colors">
+    <div className="flex flex-col h-[100vh] overflow-hidden bg-gray-100 dark:bg-[#1e1e1e] transition-colors">
       {/* Top bar */}
-      <header className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-md border-b border-white/20 dark:border-white/10 px-6 py-4 flex items-center justify-between shrink-0 shadow-[0_4px_30px_rgba(0,0,0,0.05)] z-50">
+      <header className="bg-white/70 dark:bg-[#252525]/80 backdrop-blur-md border-b border-white/20 dark:border-white/5 px-6 py-4 flex items-center justify-between shrink-0 shadow-[0_4px_30px_rgba(0,0,0,0.05)] z-50">
         <h1 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">QuickCV</h1>
         <div className="flex items-center gap-3 relative z-50">
           <ThemeToggle />
@@ -310,7 +310,7 @@ export default function Home() {
       <main className="flex-1 flex overflow-hidden">
         {/* Left column — Editor */}
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <div className="scrollbar-thin h-full overflow-y-auto overflow-x-visible isolate w-[45%] min-w-[320px] p-6 flex flex-col gap-4 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a0a0a] shadow-[10px_0_30px_rgba(0,0,0,0.05)] z-20 relative transition-colors">
+          <div className="scrollbar-thin h-full overflow-y-auto overflow-x-visible isolate w-[45%] min-w-[320px] p-6 flex flex-col gap-4 border-r border-gray-200 dark:border-white/5 bg-white dark:bg-[#252525] shadow-[10px_0_30px_rgba(0,0,0,0.05)] z-20 relative transition-colors">
 
           {/* ---- Schema guide callout ---- */}
           <div className={`shrink-0 transition-all duration-300 ease-in-out overflow-hidden ${schemaBannerDismissed ? 'max-h-0 opacity-0 mb-0' : 'max-h-[200px] opacity-100'}`}>
@@ -324,22 +324,14 @@ export default function Home() {
                 >
                   Schema Reference
                 </a>{" "}
-                to understand the JSON format, or use the AI prompt to generate
-                your resume data. Also available as{" "}
+                to understand the JSON format. Also available as{" "}
                 <a
                   href="/api/schema"
-                  className="font-semibold underline underline-offset-2 hover:text-blue-900"
-                >
-                  JSON
-                </a>{" "}
-                and{" "}
-                <a
-                  href="/api/schema?fmt=text"
-                  className="font-semibold underline underline-offset-2 hover:text-blue-900"
+                  className="font-semibold underline underline-offset-2 hover:text-blue-900 dark:hover:text-blue-100"
                 >
                   plain text
-                </a>
-                .
+                </a>{" "}
+                for AI agents.
               </span>
                 <button
                   onClick={() => setSchemaBannerDismissed(true)}
@@ -460,8 +452,8 @@ export default function Home() {
               {data.skills.map((skill, i) => (
                 <SortableItem key={`skills-${i}`} id={`skills-${i}`}>
                   {(dragHandleProps) => (
-                    <div className="flex gap-2 items-start bg-white dark:bg-gray-800/40 p-2 rounded-lg border border-transparent dark:border-gray-800 z-10 transition-colors">
-                      <div {...dragHandleProps} className="mt-1.5 cursor-grab hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded text-gray-400 dark:text-gray-500 text-lg leading-none mr-1" title="Drag to reorder">
+                    <div className="flex gap-2 items-start bg-white dark:bg-[#2a2a2a] p-2 rounded-lg border border-transparent dark:border-white/5 z-10 transition-colors">
+                      <div {...dragHandleProps} className="mt-1.5 cursor-grab hover:bg-gray-100 dark:hover:bg-white/5 p-1 rounded text-gray-400 dark:text-gray-500 text-lg leading-none mr-1" title="Drag to reorder">
                         ⋮⋮
                       </div>
                       <div className="flex-1 grid grid-cols-[100px_1fr] gap-2">
@@ -1002,7 +994,7 @@ export default function Home() {
         {/* Right column — Preview */}
         <div
           ref={previewColRef}
-          className="scrollbar-thin relative h-full overflow-y-auto overflow-x-auto flex-1 bg-gray-50 dark:bg-black flex justify-center items-start py-8 transition-colors"
+          className="scrollbar-thin relative h-full overflow-y-auto overflow-x-auto flex-1 bg-gray-50 dark:bg-[#1e1e1e] flex justify-center items-start py-8 transition-colors"
         >
           {/* Ambient Glows */}
           <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-400/20 rounded-full mix-blend-multiply filter blur-[100px] animate-pulse pointer-events-none" />

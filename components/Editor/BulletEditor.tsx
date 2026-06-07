@@ -59,7 +59,7 @@ export default function BulletEditor({
             onChange={(e) => update(i, e.target.value)}
             placeholder={placeholder}
             rows={2}
-            className="flex-1 bg-white/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700/50 rounded px-2 py-1 text-sm text-gray-900 dark:text-gray-100 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 hover:border-gray-300 dark:hover:border-gray-600 resize-y"
+            className="flex-1 bg-white/50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-white/10 rounded px-2 py-1 text-sm text-gray-900 dark:text-gray-100 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 hover:border-gray-300 dark:hover:border-white/20 resize-y"
           />
           <div className="flex flex-col gap-0.5">
             <button

@@ -58,7 +58,7 @@ QuickCV is built to integrate with AI assistants such as Claude, ChatGPT, and Ge
 
 1. **Retrieve the Prompt**: Navigate to `/schema` in the browser or retrieve it programmatically via:
    ```bash
-   curl http://localhost:3000/api/schema?fmt=text
+   curl http://localhost:3000/api/schema
    ```
 2. **Generate JSON**: Input this prompt to your LLM along with your career history. The LLM will output a strictly compliant JSON payload.
 3. **Import & Edit**: Upload the `.json` file in the QuickCV editor. The system validates the fields using Zod, performs a nested fallback merge, and populates the UI.

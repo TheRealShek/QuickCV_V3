@@ -23,11 +23,11 @@ export default function SectionEditor({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className={`shrink-0 border ${open ? 'border-gray-200 dark:border-gray-700 shadow-sm' : 'border-gray-100 dark:border-gray-800'} rounded-xl bg-white dark:bg-[#111111] overflow-hidden transition-colors duration-200`}>
+    <div className={`shrink-0 border ${open ? 'border-gray-200 dark:border-white/5 shadow-sm' : 'border-gray-100 dark:border-white/5'} rounded-xl bg-white dark:bg-[#252525] overflow-hidden transition-colors duration-200`}>
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between px-5 py-3.5 transition-colors ${open ? 'bg-gray-50/80 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}
+        className={`w-full flex items-center justify-between px-5 py-3.5 transition-colors ${open ? 'bg-gray-50/80 dark:bg-white/5 border-b border-gray-100 dark:border-white/5' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
       >
         <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 tracking-tight">{title}</span>
         <div className={`transform transition-transform duration-200 text-gray-400 flex items-center justify-center w-5 h-5 ${open ? 'rotate-180' : 'rotate-0'}`}>

@@ -54,7 +54,7 @@ export function BulletPoint({
     <div
       style={{
         fontSize: `${baseFontSize}pt`,
-        color: DESIGN.colors.mid,
+        color: "var(--cv-text-mid)",
         lineHeight: 1.4,
         paddingLeft: "12pt",
         marginBottom: `${DESIGN.spacing.bulletGap}pt`,
@@ -89,7 +89,7 @@ export function HeaderSection({ data }: { data: ResumeData }) {
         style={{
           fontSize: `${meta.nameSize}pt`,
           fontWeight: 700,
-          color: DESIGN.colors.dark,
+          color: "var(--cv-text-dark)",
           lineHeight: 1.2,
         }}
       >
@@ -111,7 +111,7 @@ export function HeaderSection({ data }: { data: ResumeData }) {
       <div
         style={{
           fontSize: `${meta.baseFontSize}pt`,
-          color: DESIGN.colors.mid,
+          color: "var(--cv-text-mid)",
           lineHeight: 1.4,
         }}
       >
@@ -144,7 +144,7 @@ export function SummarySection({ data }: { data: ResumeData }) {
     <div
       style={{
         fontSize: `${data.meta.baseFontSize}pt`,
-        color: DESIGN.colors.mid,
+        color: "var(--cv-text-mid)",
         lineHeight: 1.4,
       }}
     >
@@ -168,7 +168,7 @@ export function SkillsSection({ data }: { data: ResumeData }) {
             style={{
               fontSize: `${data.meta.baseFontSize}pt`,
               fontWeight: 700,
-              color: DESIGN.colors.dark,
+              color: "var(--cv-text-dark)",
               lineHeight: 1.4,
               width: "90pt",
               flexShrink: 0,
@@ -179,7 +179,7 @@ export function SkillsSection({ data }: { data: ResumeData }) {
           <div
             style={{
               fontSize: `${data.meta.baseFontSize}pt`,
-              color: DESIGN.colors.mid,
+              color: "var(--cv-text-mid)",
               lineHeight: 1.4,
               marginLeft: "8pt",
             }}
@@ -218,7 +218,7 @@ export function ExperienceSection({ data }: { data: ResumeData }) {
               style={{
                 fontSize: `${DESIGN.fonts.jobTitle}pt`,
                 fontWeight: 700,
-                color: DESIGN.colors.dark,
+                color: "var(--cv-text-dark)",
                 lineHeight: 1.3,
               }}
             >
@@ -228,7 +228,7 @@ export function ExperienceSection({ data }: { data: ResumeData }) {
             <div
               style={{
                 fontSize: `${DESIGN.fonts.meta}pt`,
-                color: DESIGN.colors.light,
+                color: "var(--cv-text-light)",
                 fontStyle: "italic",
                 lineHeight: 1.3,
                 marginBottom: "2pt",
@@ -237,7 +237,7 @@ export function ExperienceSection({ data }: { data: ResumeData }) {
               {cleanMetaParts.length > 0 && cleanMetaParts.join(" · ")}
             </div>
             {/* Bullets */}
-            {job.bullets.map((bullet, j) => (
+            {job.bullets.filter(b => b.trim() !== "").map((bullet, j) => (
               <BulletPoint key={j} text={bullet} baseFontSize={data.meta.baseFontSize} />
             ))}
           </div>
@@ -273,7 +273,7 @@ export function ProjectsSection({ data }: { data: ResumeData }) {
                 style={{
                   fontSize: `${DESIGN.fonts.jobTitle}pt`,
                   fontWeight: 700,
-                  color: DESIGN.colors.dark,
+                  color: "var(--cv-text-dark)",
                 }}
               >
                 {project.name}
@@ -283,7 +283,7 @@ export function ProjectsSection({ data }: { data: ResumeData }) {
                 <span
                   style={{
                     fontSize: `${DESIGN.fonts.meta}pt`,
-                    color: DESIGN.colors.light,
+                    color: "var(--cv-text-light)",
                     fontStyle: "italic",
                     marginLeft: "4pt",
                   }}
@@ -296,7 +296,7 @@ export function ProjectsSection({ data }: { data: ResumeData }) {
             <div
               style={{
                 fontSize: `${DESIGN.fonts.meta}pt`,
-                color: DESIGN.colors.light,
+                color: "var(--cv-text-light)",
                 lineHeight: 1.3,
                 marginBottom: project.link ? "1pt" : "2pt",
               }}
@@ -317,7 +317,7 @@ export function ProjectsSection({ data }: { data: ResumeData }) {
               </div>
             )}
             {/* Bullets */}
-            {project.bullets.map((bullet, j) => (
+            {project.bullets.filter(b => b.trim() !== "").map((bullet, j) => (
               <BulletPoint key={j} text={bullet} baseFontSize={data.meta.baseFontSize} />
             ))}
           </div>
@@ -352,7 +352,7 @@ export function EducationSection({ data }: { data: ResumeData }) {
               style={{
                 fontSize: `${DESIGN.fonts.jobTitle}pt`,
                 fontWeight: 700,
-                color: DESIGN.colors.dark,
+                color: "var(--cv-text-dark)",
                 lineHeight: 1.3,
               }}
             >
@@ -362,7 +362,7 @@ export function EducationSection({ data }: { data: ResumeData }) {
             <div
               style={{
                 fontSize: `${DESIGN.fonts.meta}pt`,
-                color: DESIGN.colors.light,
+                color: "var(--cv-text-light)",
                 fontStyle: "italic",
                 lineHeight: 1.3,
               }}
@@ -374,7 +374,7 @@ export function EducationSection({ data }: { data: ResumeData }) {
               <div
                 style={{
                   fontSize: `${data.meta.baseFontSize}pt`,
-                  color: DESIGN.colors.mid,
+                  color: "var(--cv-text-mid)",
                   lineHeight: 1.4,
                   marginTop: "2pt",
                 }}
@@ -387,7 +387,7 @@ export function EducationSection({ data }: { data: ResumeData }) {
               <div
                 style={{
                   fontSize: `${data.meta.baseFontSize}pt`,
-                  color: DESIGN.colors.mid,
+                  color: "var(--cv-text-mid)",
                   lineHeight: 1.4,
                   marginTop: "2pt",
                 }}
@@ -428,7 +428,7 @@ export function CertificationsSection({ data }: { data: ResumeData }) {
             <div
               style={{
                 fontSize: `${data.meta.baseFontSize}pt`,
-                color: DESIGN.colors.mid,
+                color: "var(--cv-text-mid)",
                 lineHeight: 1.4,
               }}
             >
@@ -468,7 +468,7 @@ export function OpenSourceSection({ data }: { data: ResumeData }) {
             style={{
               fontSize: `${DESIGN.fonts.jobTitle}pt`,
               fontWeight: 700,
-              color: DESIGN.colors.dark,
+              color: "var(--cv-text-dark)",
               lineHeight: 1.3,
             }}
           >
@@ -478,7 +478,7 @@ export function OpenSourceSection({ data }: { data: ResumeData }) {
           <div
             style={{
               fontSize: `${data.meta.baseFontSize}pt`,
-              color: DESIGN.colors.mid,
+              color: "var(--cv-text-mid)",
               lineHeight: 1.4,
             }}
           >
@@ -501,7 +501,7 @@ export function OpenSourceSection({ data }: { data: ResumeData }) {
             <div
               style={{
                 fontSize: `${DESIGN.fonts.meta}pt`,
-                color: DESIGN.colors.light,
+                color: "var(--cv-text-light)",
                 fontStyle: "italic",
                 lineHeight: 1.4,
               }}
